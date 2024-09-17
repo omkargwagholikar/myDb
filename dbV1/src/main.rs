@@ -1,5 +1,8 @@
 mod input_buffer;
 mod statement;
+mod row;
+mod constants;
+mod table;
 
 use input_buffer::InputBuffer;
 use statement::Statement;
@@ -32,6 +35,9 @@ fn main() {
         print_prompt();
         let mut input_buffer = InputBuffer::new();
         input_buffer.read_input();
+        let mut statement = Statement::new();
+        statement.prepare_statement(&input_buffer);                
+
         if input_buffer.buffer.chars().nth(0).unwrap() == '.' {
             match do_meta_command(&input_buffer) {
                 MetaCommandResult::MetaCommandSuccess => continue,
@@ -48,3 +54,9 @@ fn main() {
         }
     }
 }
+
+// let row = statement.row;
+// let mut buffer: Vec<u8> = vec![0; ID_SIZE + USERNAME_SIZE + EMAIL_SIZE];
+// Row::serialize_row(&row, &mut buffer);
+// let mut deSerialRow = Row::new();
+// Row::deserialize_row(&buffer, &mut deSerialRow);
