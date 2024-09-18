@@ -23,6 +23,6 @@ pub const PAGE_SIZE: usize = 4096;
 #[allow(dead_code)]
 pub const TABLE_MAX_PAGES: usize = 100;
 #[allow(dead_code)]
-pub const ROWS_PER_PAGE: i32 = (PAGE_SIZE / ROW_SIZE) as i32;
-// #[allow(dead_code)]
-// pub const TABLE_MAX_ROWS: usize = ROWS_PER_PAGE * TABLE_MAX_PAGES;
+pub const ROWS_PER_PAGE: usize = (PAGE_SIZE / ROW_SIZE) as usize;
+#[allow(dead_code)]
+pub const TABLE_MAX_ROWS: usize = ROWS_PER_PAGE * TABLE_MAX_PAGES;

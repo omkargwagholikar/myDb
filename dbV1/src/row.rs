@@ -66,4 +66,9 @@ impl Row {
             );
         }
     }
+    pub fn print_row(&self) {
+        let username: String = self.username.iter().collect();
+        let email: String = self.email.iter().collect();
+        println!("{}\t{}\t\t{}", self.id, username, email);
+    }
 }
