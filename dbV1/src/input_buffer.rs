@@ -14,9 +14,8 @@ impl InputBuffer {
             input_length: -1,
         }
     }
-
+    
     pub fn read_input(&mut self) {
-
         let mut input = String::new();
         match stdin().read_line(&mut input) {
             Ok(bytes_read) => {

@@ -5,11 +5,11 @@ mod constants;
 mod table;
 mod pager;
 
-use constants::ROW_SIZE;
 use input_buffer::InputBuffer;
-use row::Row;
 use statement::Statement;
 use table::Table;
+
+use constants::*;
 
 use std::process::exit;
 use std::io::{stdout, Write};
@@ -37,29 +37,31 @@ fn do_meta_command(input_buffer: &InputBuffer, table: &mut Table) -> MetaCommand
     }
 }
 
-fn main() { 
-    let file_name = String::from("temp.db");
+fn main() {
+    
+    let file_name = String::from("temp2.db");
     let mut table = Table::new(&file_name);
     println!("Table has: {} rows", table.num_rows);
 
-    let r = Row::new();
-    let mut s = Row::new();
-    let mut ser: [u8; ROW_SIZE] = [0u8; ROW_SIZE];
-
-    // for i in 0..3 {
-        //     let mut input_buffer = InputBuffer::new();
+    // for _i in 0..3 {
+    //     let mut input_buffer = InputBuffer::new();
     //     input_buffer.buffer = "insert 1 omkar wagholikar".to_owned();
     //     let mut statement =  Statement::new();
     //     statement.prepare_statement(&input_buffer);
     //     statement.execute_statement(&mut table);
     // }
-    
-    Row::serialize_row(&r, &mut table.row_slot(0));
-    Row::deserialize_row(&table.row_slot(0), &mut s);
-    s.print_row();
-    table.db_close();
-    Row::serialize_row(&r, &mut ser);
-    Row::deserialize_row(&ser, &mut s);
+
+    // let a: f32 = table.pager.file_length as f32;
+    // let b: f32 = ROW_SIZE as f32;
+    // println!("This is number of rows: {}", ((a)/b));
+
+    // table.db_close();
+
+    // Row::serialize_row(&r, &mut table.row_slot(0));
+    // Row::deserialize_row(&table.row_slot(0), &mut s);
+    // s.print_row();
+    // Row::serialize_row(&r, &mut ser);
+    // Row::deserialize_row(&ser, &mut s);
 
     loop {
         print_prompt();

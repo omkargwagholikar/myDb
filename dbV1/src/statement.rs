@@ -41,7 +41,7 @@ impl Statement {
             }
 
             if let Some(id_str) = a.get(1) {
-                self.row.id = id_str.parse::<i32>().unwrap_or(-12);
+                self.row.id = id_str.parse::<i8>().unwrap_or(-12);
                 if self.row.id < 0 {
                     return PrepareResult::PrepareNegativeId;
                 }

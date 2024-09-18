@@ -21,7 +21,7 @@ impl Table {
         let row_offset = row_num % ROWS_PER_PAGE;
         let byte_offset = row_offset * ROW_SIZE;
         let page = self.pager.get_page(page_num);
-        &mut page[byte_offset..byte_offset + ROW_SIZE +1]
+        &mut page[byte_offset..byte_offset + ROW_SIZE]
     }
 
     pub fn db_close(&mut self) {

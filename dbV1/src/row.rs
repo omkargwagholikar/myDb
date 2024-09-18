@@ -3,7 +3,7 @@ use std::ptr;
 
 pub struct Row {
     // id, username, email
-    pub id: i32,
+    pub id: i8,
     pub username: [char; COLUMN_USERNAME_SIZE],
     pub email: [char; COLUMN_EMAIL_SIZE]
 }
@@ -21,7 +21,7 @@ impl Row {
         unsafe {
             // Copy the id to the destination
             ptr::copy_nonoverlapping(
-                &source.id as *const i32 as *const u8,
+                &source.id as *const i8 as *const u8,
                 destination.as_mut_ptr().add(ID_OFFSET),
                 std::mem::size_of::<i32>(),
             );
@@ -47,7 +47,7 @@ impl Row {
             // Copy the id from the source
             ptr::copy_nonoverlapping(
                 source.as_ptr().add(ID_OFFSET),
-                &mut destination.id as *mut i32 as *mut u8,
+                &mut destination.id as *mut i8 as *mut u8,
                 ID_SIZE,
             );
         
