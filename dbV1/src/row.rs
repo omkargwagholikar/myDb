@@ -70,6 +70,6 @@ impl Row {
     pub fn print_row(&self) {
         let username: String = self.username.iter().collect::<String>().trim_matches('\0').to_string();
         let email: String = self.email.iter().collect::<String>().trim_matches('\0').to_string();
-        println!(".{}\t.{}\t\t.{}", self.id, username, email);
+        println!("{}\t{}\t\t{}", self.id, username, email);
     }
 }

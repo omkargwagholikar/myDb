@@ -31,9 +31,11 @@ impl Table {
         for i in 0..num_full_pages {
             if self.pager.pages[i].is_none() {
                 continue;
+            } else {
+                self.pager.flush(i, PAGE_SIZE);
+                self.pager.pages[i] = None;
+                println!("Not null page: {i}")
             }
-            self.pager.flush(i, PAGE_SIZE);
-            self.pager.pages[i] = None;
         }
 
         let num_additional_rows = self.num_rows % ROWS_PER_PAGE;
