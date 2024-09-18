@@ -8,8 +8,9 @@ pub enum StatementType{
 pub enum PrepareResult {
     StatementUnrecognized,
     PrepareSyntaxError,
-    PrepareSuccess
-
+    PrepareSuccess,
+    PrepareStringTooLong,
+    PrepareNegativeId
 }
 
 pub enum ExecuteResult {
@@ -34,16 +35,26 @@ impl Statement {
             self.statement_type = StatementType::StatementInsert;
 
             let a: Vec<String> = input_buffer.buffer.split_whitespace().map(str::to_string).collect();
-    
-            if let Some(bb) = a.get(1) {
-                self.row.id = bb.parse::<i32>().unwrap_or(-1);
+
+            if a.len() != 4 {
+                return PrepareResult::PrepareSyntaxError;
+            }
+
+            if let Some(id_str) = a.get(1) {
+                self.row.id = id_str.parse::<i32>().unwrap_or(-12);
+                if self.row.id < 0 {
+                    return PrepareResult::PrepareNegativeId;
+                }
             } else {
                 println!("Could not read ID properly");
                 return PrepareResult::PrepareSyntaxError
             }
             
-            if let Some(bb) = a.get(2) {
-                for (i, c) in bb.chars().take(COLUMN_USERNAME_SIZE).enumerate() {
+            if let Some(user_name) = a.get(2) {
+                if user_name.len() > COLUMN_USERNAME_SIZE {
+                    return  PrepareResult::PrepareStringTooLong;
+                }
+                for (i, c) in user_name.chars().take(COLUMN_USERNAME_SIZE).enumerate() {
                     self.row.username[i] = c;
                 }
             } else {
@@ -51,8 +62,11 @@ impl Statement {
                 return PrepareResult::PrepareSyntaxError
             }
             
-            if let Some(bb) = a.get(3) {
-                for (i, c) in bb.chars().take(COLUMN_EMAIL_SIZE).enumerate() {
+            if let Some(email) = a.get(3) {
+                if email.len() > COLUMN_EMAIL_SIZE {
+                    return  PrepareResult::PrepareStringTooLong;
+                }
+                for (i, c) in email.chars().take(COLUMN_EMAIL_SIZE).enumerate() {
                     self.row.email[i] = c;
                 }
             } else {
@@ -93,11 +107,9 @@ impl Statement {
     pub fn execute_statement(&mut self, table: &mut Table) {
         match self.statement_type {
             StatementType::StatementInsert => {
-                println!("Inserting...");
                 self.execute_insert(table);
             },
             StatementType::StatementSelect => {
-                println!("Selecting...");
                 self.execute_select(table);
             },
             StatementType::Default => {
@@ -105,4 +117,5 @@ impl Statement {
             }
         }
     }
+    
 }

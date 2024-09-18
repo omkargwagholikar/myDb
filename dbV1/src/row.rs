@@ -4,16 +4,16 @@ use std::ptr;
 pub struct Row {
     // id, username, email
     pub id: i32,
-    pub username: [char; COLUMN_USERNAME_SIZE],
-    pub email: [char; COLUMN_EMAIL_SIZE]
+    pub username: [char; COLUMN_USERNAME_SIZE + 1],
+    pub email: [char; COLUMN_EMAIL_SIZE + 1]
 }
 
 impl Row {
     pub fn new() -> Row{
         Row {
             id: -1, 
-            username: ['\0'; COLUMN_USERNAME_SIZE],
-            email: ['\0'; COLUMN_EMAIL_SIZE]
+            username: ['\0'; COLUMN_USERNAME_SIZE + 1],
+            email: ['\0'; COLUMN_EMAIL_SIZE + 1]
         }
     }
 
@@ -67,8 +67,8 @@ impl Row {
         }
     }
     pub fn print_row(&self) {
-        let username: String = self.username.iter().collect();
-        let email: String = self.email.iter().collect();
+        let username: String = self.username.iter().collect::<String>().trim_matches('\0').to_string();
+        let email: String = self.email.iter().collect::<String>().trim_matches('\0').to_string();
         println!("{}\t{}\t\t{}", self.id, username, email);
     }
 }

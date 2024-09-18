@@ -35,6 +35,7 @@ fn do_meta_command(input_buffer: &InputBuffer, table: &mut Table) -> MetaCommand
 
 fn main() { 
     let mut table = Table::new();
+    
     loop {
         print_prompt();
         let mut input_buffer = InputBuffer::new();
@@ -54,23 +55,27 @@ fn main() {
             let mut statement = Statement::new();
             match statement.prepare_statement(&input_buffer) {
                 statement::PrepareResult::StatementUnrecognized => {
-                    println!("Statement not recognized")
+                    println!("Statement not recognized");
+                    continue
                 },
                 statement::PrepareResult::PrepareSyntaxError => {
-                    println!("Statement has a Syntax Error");
+                    println!("Syntax error. Could not parse statement.");
+                    continue;
                 },
                 statement::PrepareResult::PrepareSuccess => {
                     
                 },
+                statement::PrepareResult::PrepareStringTooLong => {
+                    println!("String is too long.");
+                    continue;
+                }
+                statement::PrepareResult::PrepareNegativeId => {
+                    println!("ID must be positive.");
+                    continue;
+                }
             }
             statement.execute_statement(&mut table);
-            // println!("Execution complete of: {}", input_buffer.buffer);
+            println!("Executed. ");
         }
     }
 }
-
-// let row = statement.row;
-// let mut buffer: Vec<u8> = vec![0; ID_SIZE + USERNAME_SIZE + EMAIL_SIZE];
-// Row::serialize_row(&row, &mut buffer);
-// let mut deSerialRow = Row::new();
-// Row::deserialize_row(&buffer, &mut deSerialRow);
