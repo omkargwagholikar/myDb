@@ -37,9 +37,8 @@ fn do_meta_command(input_buffer: &InputBuffer, table: &mut Table) -> MetaCommand
 
 fn main() {
     
-    let file_name = String::from("temp2.db");
+    let file_name = String::from("test.db");
     let mut table = Table::new(&file_name);
-    println!("Table has: {} rows", table.num_rows);
 
     loop {
         print_prompt();

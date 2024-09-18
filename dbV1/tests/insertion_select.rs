@@ -1,6 +1,19 @@
 use std::process::{Command, Stdio};
 use std::io::Write;
 
+fn drop_db() {
+    let status = Command::new("rm")
+        .arg("test.db")
+        .status()
+        .expect("Failed to execute rm command");
+
+    if status.success() {
+        println!("Database 'test.db' dropped successfully.");
+    } else {
+        println!("Failed to drop the database.");
+    }
+}
+
 fn run_script(commands: Vec<&str>) -> Vec<String> {
     let mut child = Command::new("./target/debug/dbV1")
         .stdin(Stdio::piped())
@@ -24,6 +37,7 @@ fn run_script(commands: Vec<&str>) -> Vec<String> {
 
 #[test]
 fn inserts_and_retrieves_a_row() {
+    drop_db();
     let result = run_script(vec![
         "insert 1 user1 person1@example.com",
         "select",
@@ -41,6 +55,7 @@ fn inserts_and_retrieves_a_row() {
 
 #[test]
 fn allows_inserting_strings_that_are_the_maximum_length() {
+    drop_db();
     let long_username = "a".repeat(32);
     let long_email = "a".repeat(255);
     let result = run_script(vec![
@@ -59,8 +74,9 @@ fn allows_inserting_strings_that_are_the_maximum_length() {
 
 #[test]
 fn prints_error_message_if_strings_are_too_long() {
-    let long_username = "a".repeat(33);
-    let long_email = "a".repeat(256);
+    drop_db();
+    let long_username = "a".repeat(34);
+    let long_email = "a".repeat(257);
     let result = run_script(vec![
         &format!("insert 1 {} {}", long_username, long_email),
         "select",
@@ -76,6 +92,7 @@ fn prints_error_message_if_strings_are_too_long() {
 
 #[test]
 fn prints_error_message_if_id_is_negative() {
+    drop_db();   
     let result = run_script(vec![
         "insert -1 cstack foo@bar.com",
         "select",

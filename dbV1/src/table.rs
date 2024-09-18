@@ -26,20 +26,17 @@ impl Table {
 
     pub fn db_close(&mut self) {
         let num_full_pages = self.num_rows / ROWS_PER_PAGE;
-        println!("total rows: {}", self.num_rows);
-        println!("Full Pages: {}", num_full_pages);
+        
         for i in 0..num_full_pages {
             if self.pager.pages[i].is_none() {
                 continue;
             } else {
                 self.pager.flush(i, PAGE_SIZE);
                 self.pager.pages[i] = None;
-                println!("Not null page: {i}")
             }
         }
 
         let num_additional_rows = self.num_rows % ROWS_PER_PAGE;
-        println!("Additional rows: {}", num_additional_rows);
         if num_additional_rows > 0 {
             let page_num = num_full_pages;
             if !self.pager.pages[page_num].is_none() {

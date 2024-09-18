@@ -4,7 +4,7 @@ use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 
 pub struct Pager {
-    pub file_descriptor: File,
+    pub file: File,
     pub file_length: usize,
     pub pages: [Option<Vec<u8>>; TABLE_MAX_PAGES],
 }
@@ -36,7 +36,7 @@ impl Pager {
         let pages = std::array::from_fn(|_| None);
 
         Pager {
-            file_descriptor: file,
+            file,
             file_length,
             pages,
         }
@@ -50,14 +50,14 @@ impl Pager {
 
         if self.pages[page_num].is_none() {
             let mut page = vec![0u8; PAGE_SIZE];
-            let mut num_pages = self.file_length / PAGE_SIZE;
-            if self.file_length % PAGE_SIZE != 0 {
-                num_pages += 1;
-            }
+            let num_pages = self.file_length / PAGE_SIZE;
+
             if page_num < num_pages {
-                println!("New Page: {page_num}");
-                self.file_descriptor.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
-                self.file_descriptor.read_exact(&mut page).expect("Error in reading");
+                self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
+                self.file.read_exact(&mut page).expect("Error in reading");
+            } else {
+                self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
+                self.file.read(&mut page).expect("Error in reading partially complete page");
             }
 
             self.pages[page_num] = Some(page);
@@ -71,7 +71,7 @@ impl Pager {
             return;
         }
 
-        match self.file_descriptor.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)) {
+        match self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)) {
             Ok(_) => {
                 
             },
@@ -82,7 +82,7 @@ impl Pager {
         }
 
         if let Some(page) = &self.pages[page_num] {
-            match self.file_descriptor.write(&page[..size]) {
+            match self.file.write(&page[..size]) {
                 Ok(_) => {},
                 Err(err) => {
                     eprintln!("Error writing: {}", err);
