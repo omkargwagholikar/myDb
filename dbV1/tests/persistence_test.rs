@@ -52,6 +52,7 @@ fn insert() {
         "dbv1 > "
     ]);
 }
+
 fn check() {
     let result = run_script(vec![
         "select",
@@ -63,6 +64,7 @@ fn check() {
         "Executed. ",
         "dbv1 > "
     ]);
+
 }
 
 # [test]

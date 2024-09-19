@@ -110,3 +110,35 @@ fn prints_error_message_if_id_is_negative() {
 
     drop_db();
 }
+
+
+#[test]
+fn insert_many() {
+
+    drop_db();
+    
+    let result = run_script(vec![
+        "insert 1 user1 person1@example.com",
+        "insert 2 user1 person1@example.com",
+        "insert 3 user1 person1@example.com",
+        "insert 4 user1 person1@example.com",
+        "select",
+        ".exit"
+    ]);
+    
+    assert_eq!(result, vec![
+        "dbv1 > Executed. ",
+        "dbv1 > Executed. ",
+        "dbv1 > Executed. ",
+        "dbv1 > Executed. ",
+        "dbv1 > Id\tUsername\tEmail", 
+        "1\tuser1\t\tperson1@example.com",
+        "2\tuser1\t\tperson1@example.com",
+        "3\tuser1\t\tperson1@example.com",
+        "4\tuser1\t\tperson1@example.com", 
+        "Executed. ",
+        "dbv1 > "
+    ]);
+
+    drop_db();
+}

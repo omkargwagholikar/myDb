@@ -9,7 +9,7 @@ pub struct Table {
 impl Table {
     pub fn new(file_name: &str) -> Table{
         let temp_pager = Pager::new(file_name);
-        let temp_num_rows = temp_pager.file_length / ROW_SIZE;
+        let temp_num_rows = (temp_pager.file_length / PAGE_SIZE) * ROWS_PER_PAGE + (temp_pager.file_length % PAGE_SIZE) / ROW_SIZE;
         Table {
             pager: temp_pager,
             num_rows: temp_num_rows,
@@ -19,7 +19,7 @@ impl Table {
     // // This funtion is replaced by cursor::cursor_value at that row, 
     // // this helps to create an abstraction as the actual arrangement 
     // // of data within the table will change when implementing the b tree
-    
+
     // pub fn row_slot(&mut self, row_num: usize) -> &mut [u8] {
     //     let page_num = row_num / ROWS_PER_PAGE;
     //     let row_offset = row_num % ROWS_PER_PAGE;
