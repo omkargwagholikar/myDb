@@ -16,13 +16,17 @@ impl Table {
         }
     }
     
-    pub fn row_slot(&mut self, row_num: usize) -> &mut [u8] {
-        let page_num = row_num / ROWS_PER_PAGE;
-        let row_offset = row_num % ROWS_PER_PAGE;
-        let byte_offset = row_offset * ROW_SIZE;
-        let page = self.pager.get_page(page_num);
-        &mut page[byte_offset..byte_offset + ROW_SIZE]
-    }
+    // // This funtion is replaced by cursor::cursor_value at that row, 
+    // // this helps to create an abstraction as the actual arrangement 
+    // // of data within the table will change when implementing the b tree
+    
+    // pub fn row_slot(&mut self, row_num: usize) -> &mut [u8] {
+    //     let page_num = row_num / ROWS_PER_PAGE;
+    //     let row_offset = row_num % ROWS_PER_PAGE;
+    //     let byte_offset = row_offset * ROW_SIZE;
+    //     let page = self.pager.get_page(page_num);
+    //     &mut page[byte_offset..byte_offset + ROW_SIZE]
+    // }
 
     pub fn db_close(&mut self) {
         let num_full_pages = self.num_rows / ROWS_PER_PAGE;

@@ -1,4 +1,4 @@
-use crate::{constants::*, input_buffer::InputBuffer, row::Row, table::Table};
+use crate::{constants::*, input_buffer::InputBuffer, row::Row, table::Table, cursor::Cursor};
 pub enum StatementType{ 
     StatementInsert, 
     StatementSelect,
@@ -87,8 +87,10 @@ impl Statement {
         if table.num_rows as usize >= TABLE_MAX_ROWS {
             return ExecuteResult::ExecuteTableFull;
         }
+        let mut cursor = Cursor::new(table);
+        cursor.table_end();
 
-        Row::serialize_row(&self.row, table.row_slot(table.num_rows));
+        Row::serialize_row(&self.row, cursor.cursor_value());
         table.num_rows += 1;
         
         return ExecuteResult::ExecuteSuccess;
@@ -96,11 +98,16 @@ impl Statement {
 
     pub fn execute_select(&self, table: &mut Table) -> ExecuteResult {
         let mut row: Row = Row::new();
+        let mut cursor = Cursor::new(table);
+        cursor.table_start();
         println!("Id\tUsername\tEmail");
-        for i in 0..table.num_rows {
-            Row::deserialize_row(&table.row_slot(i), &mut row);
+        
+        while !cursor.end_of_table {
+            Row::deserialize_row(cursor.cursor_value(), &mut row);
+            cursor.advance_cursor();
             row.print_row();
         }
+
         return  ExecuteResult::ExecuteSuccess;
     }
 

@@ -11,6 +11,7 @@ fn drop_db() {
         println!("Database 'test.db' dropped successfully.");
     } else {
         println!("Failed to drop the database.");
+        // std::process::exit(1);
     }
 }
 
@@ -37,7 +38,6 @@ fn run_script(commands: Vec<&str>) -> Vec<String> {
 
 #[test]
 fn inserts_and_retrieves_a_row() {
-    drop_db();
     let result = run_script(vec![
         "insert 1 user1 person1@example.com",
         "select",
@@ -51,11 +51,12 @@ fn inserts_and_retrieves_a_row() {
         "Executed. ",
         "dbv1 > "
     ]);
+
+    drop_db();
 }
 
 #[test]
 fn allows_inserting_strings_that_are_the_maximum_length() {
-    drop_db();
     let long_username = "a".repeat(32);
     let long_email = "a".repeat(255);
     let result = run_script(vec![
@@ -70,11 +71,12 @@ fn allows_inserting_strings_that_are_the_maximum_length() {
         "Executed. ",
         "dbv1 > ",
     ]);
+
+    drop_db();
 }
 
 #[test]
 fn prints_error_message_if_strings_are_too_long() {
-    drop_db();
     let long_username = "a".repeat(34);
     let long_email = "a".repeat(257);
     let result = run_script(vec![
@@ -88,11 +90,12 @@ fn prints_error_message_if_strings_are_too_long() {
         "Executed. ",
         "dbv1 > ",
     ]);
+
+    drop_db();
 }
 
 #[test]
 fn prints_error_message_if_id_is_negative() {
-    drop_db();   
     let result = run_script(vec![
         "insert -1 cstack foo@bar.com",
         "select",
@@ -104,4 +107,6 @@ fn prints_error_message_if_id_is_negative() {
         "Executed. ",
         "dbv1 > ",
     ]);
+
+    drop_db();
 }
