@@ -1,41 +1,54 @@
-use crate::table::Table;
-use crate::constants::*;
+use crate::{table::Table, leaf_node::LeafNode};
 
 pub struct Cursor<'a> {
-    pub table: &'a mut Table,  // Mutable reference to Table
-    pub row_num: usize,
+    pub table: &'a mut Table,
+    pub cell_num: i32,
+    pub page_num: usize,
     pub end_of_table: bool,
 }
 
 impl<'a> Cursor<'a> {
     pub fn new(table: &'a mut Table) -> Cursor<'a> {
-        let end_row = table.num_rows == 0;
+        let page_num = table.root_page_num;
+        let cell_num = 0;
         Cursor {
-            table: table,
-            row_num: 0,
-            end_of_table: end_row,
+            table,
+            cell_num,
+            page_num,
+            end_of_table: false
         }
     }
 
     pub fn table_start(&mut self) {
-        self.end_of_table = self.table.num_rows <= 0;
-        self.row_num = 0;        
+        self.cell_num = 0;
+        self.page_num = self.table.root_page_num;
+
+        let root_data = self.table.pager.get_page(self.page_num);
+        let num_cells = LeafNode::leaf_node_num_cells(root_data);
+
+        self.end_of_table = *num_cells == 0;        
     }
 
     pub fn table_end(&mut self) {
-        self.row_num = self.table.num_rows;
+        let root_data = self.table.pager.get_page(self.table.root_page_num);
+        let num_cells = LeafNode::leaf_node_num_cells(root_data);
+        self.cell_num = *num_cells;
         self.end_of_table = true;
     }
 
     pub fn advance_cursor(&mut self) {
-        self.row_num += 1;
-        if self.row_num >= self.table.num_rows { self.end_of_table = true };
+        let page_num = self.page_num;
+        let node = self.table.pager.get_page(page_num);
+        self.cell_num += 1;
+        if self.cell_num >= *LeafNode::leaf_node_num_cells(node) {
+            self.end_of_table = true
+        };
     }
+
     pub fn cursor_value(&mut self) -> &mut [u8] {
-        let page_num = self.row_num / ROWS_PER_PAGE;
-        let row_offset = self.row_num % ROWS_PER_PAGE;
-        let byte_offset = row_offset * ROW_SIZE;
+        let page_num = self.page_num;
         let page = self.table.pager.get_page(page_num);
-        &mut page[byte_offset..byte_offset + ROW_SIZE]
+        // let mut node = LeafNode::new(page);
+        return LeafNode::leaf_node_value(page, self.cell_num);
     }
 }

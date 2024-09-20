@@ -1,18 +1,25 @@
 use crate::constants::*;
+use crate::leaf_node::LeafNode;
 use crate::pager::Pager;
 
 pub struct Table {
-    pub num_rows: usize,
-    pub pager: Pager
+    pub pager: Pager,
+    pub root_page_num: usize
 }
 
 impl Table {
     pub fn new(file_name: &str) -> Table{
-        let temp_pager = Pager::new(file_name);
-        let temp_num_rows = (temp_pager.file_length / PAGE_SIZE) * ROWS_PER_PAGE + (temp_pager.file_length % PAGE_SIZE) / ROW_SIZE;
+        let mut pager = Pager::new(file_name);
+        let root_page_num = 0;
+        
+        if pager.num_pages == 0 {
+            let root_data = pager.get_page(0);
+            LeafNode::initialize_leaf_node(root_data);
+        }
+        
         Table {
-            pager: temp_pager,
-            num_rows: temp_num_rows,
+            pager,
+            root_page_num
         }
     }
     
@@ -29,24 +36,13 @@ impl Table {
     // }
 
     pub fn db_close(&mut self) {
-        let num_full_pages = self.num_rows / ROWS_PER_PAGE;
         
-        for i in 0..num_full_pages {
-            if self.pager.pages[i].is_none() {
-                continue;
-            } else {
-                self.pager.flush(i, PAGE_SIZE);
+        for i in 0..self.pager.num_pages {
+            if !self.pager.pages[i].is_none() {
+                self.pager.flush(i);
                 self.pager.pages[i] = None;
             }
         }
 
-        let num_additional_rows = self.num_rows % ROWS_PER_PAGE;
-        if num_additional_rows > 0 {
-            let page_num = num_full_pages;
-            if !self.pager.pages[page_num].is_none() {
-                self.pager.flush(page_num, num_additional_rows * ROW_SIZE);
-                self.pager.pages[page_num] = None;
-            }
-        }
     }
 }

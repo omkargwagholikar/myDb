@@ -6,6 +6,7 @@ use std::io::{Read, Seek, SeekFrom, Write};
 pub struct Pager {
     pub file: File,
     pub file_length: usize,
+    pub num_pages: usize,
     pub pages: [Option<Vec<u8>>; TABLE_MAX_PAGES],
 }
 
@@ -34,10 +35,17 @@ impl Pager {
                 }
             };
         let pages = std::array::from_fn(|_| None);
+        let num_pages = pages.len() / PAGE_SIZE;
+
+        if file_length % PAGE_SIZE != 0 {
+            println!("There seem to be a fractional number of pages, the file may be courrupt");
+            std::process::exit(1);
+        }
 
         Pager {
             file,
             file_length,
+            num_pages,
             pages,
         }
     }
@@ -56,33 +64,36 @@ impl Pager {
                 self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
                 self.file.read_exact(&mut page).expect("Error in reading");
             } else {
+                println!("Reading partial page, unexpected case");
                 self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
                 self.file.read(&mut page).expect("Error in reading partially complete page");
             }
 
             self.pages[page_num] = Some(page);
+
+            if page_num >= self.num_pages {
+                self.num_pages += 1;
+            }
         }
         return  self.pages[page_num].as_mut().unwrap();
     }
 
-    pub fn flush(&mut self, page_num: usize, size: usize) {
+    pub fn flush(&mut self, page_num: usize) {
         if self.pages[page_num].is_none() {
             println!("Tried to flush null page");
             return;
         }
 
         match self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)) {
-            Ok(_) => {
-                
-            },
-            Err(_) => {
-                println!("Error seeking in File");
+            Ok(_) => {},
+            Err(e) => {
+                println!("Error seeking in File :{}", e);
                 std::process::exit(1);
             },
         }
 
         if let Some(page) = &self.pages[page_num] {
-            match self.file.write(&page[..size]) {
+            match self.file.write(&page[..PAGE_SIZE]) {
                 Ok(_) => {},
                 Err(err) => {
                     eprintln!("Error writing: {}", err);

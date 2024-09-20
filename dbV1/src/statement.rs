@@ -1,4 +1,4 @@
-use crate::{constants::*, input_buffer::InputBuffer, row::Row, table::Table, cursor::Cursor};
+use crate::{constants::*, cursor::Cursor, input_buffer::InputBuffer, leaf_node::LeafNode, row::Row, table::Table};
 pub enum StatementType{ 
     StatementInsert, 
     StatementSelect,
@@ -84,14 +84,16 @@ impl Statement {
     }
 
     pub fn execute_insert(&self, table: &mut Table) -> ExecuteResult {
-        if table.num_rows as usize >= TABLE_MAX_ROWS {
+        let root_data = table.pager.get_page(table.root_page_num);
+        let num_cells = *LeafNode::leaf_node_num_cells(root_data);
+        if num_cells as usize >= TABLE_MAX_ROWS {
             return ExecuteResult::ExecuteTableFull;
         }
         let mut cursor = Cursor::new(table);
         cursor.table_end();
 
+        // Testing needed here
         Row::serialize_row(&self.row, cursor.cursor_value());
-        table.num_rows += 1;
         
         return ExecuteResult::ExecuteSuccess;
     }
