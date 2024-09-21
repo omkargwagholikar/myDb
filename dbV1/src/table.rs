@@ -1,4 +1,3 @@
-use crate::leaf_node::LeafNode;
 use crate::pager::Pager;
 
 pub struct Table {
@@ -8,13 +7,16 @@ pub struct Table {
 
 impl Table {
     pub fn new(file_name: &str) -> Table{
-        let mut pager = Pager::new(file_name);
+        let pager = Pager::new(file_name);
         let root_page_num = 0;
         
-        if pager.num_pages == 0 {
-            let root_data = pager.get_page(0);
-            // LeafNode::initialize_leaf_node(root_data);
-        }
+        // // This is no longer needed as the get page function will create a new 
+        // // leaf node when called at page 0 on an empty file.
+        
+        // if pager.num_pages == 0 {
+        //     let root_data = pager.get_page(0);
+        //         LeafNode::initialize_leaf_node(root_data);
+        // }
         
         Table {
             pager,
