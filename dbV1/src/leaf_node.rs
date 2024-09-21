@@ -1,4 +1,4 @@
-use crate::{constants::*, table::Table, row::Row, cursor::Cursor};
+use crate::{constants::*, row::Row, cursor::Cursor};
 
 pub struct LeafNode{
     
@@ -35,31 +35,36 @@ impl LeafNode{
         *num_cells = 0;
     }
 
-    // pub fn leaf_node_insert(cursor: &mut Cursor, key: i32, value: &mut Row) {
-    //     let node = cursor.table.pager.get_page(cursor.page_num);
-    //     let num_cells = *LeafNode::leaf_node_num_cells(node);
+    pub fn leaf_node_insert(cursor: &mut Cursor, key: i32, value: & Row) {
+        let node = cursor.table.pager.get_page(cursor.page_num);
+        let num_cells = *LeafNode::leaf_node_num_cells(node);
 
-    //     // Check if the leaf node is full, and handle the split if needed.
-    //     if num_cells as usize >= LEAF_NODE_MAX_CELLS {
-    //         println!("Split node required (not implemented)");
-    //         std::process::exit(1); 
-    //     }
+        let mut page_full: Vec<u8> = vec![0u8; PAGE_SIZE];
 
-    //     if cursor.cell_num < num_cells {
-    //         for i in (cursor.cell_num..num_cells).rev() {
-    //             let dest = Self::leaf_node_cell(node, i + 1);
-    //             let src = Self::leaf_node_cell(node, i);
-    //             dest.copy_from_slice(src); // Move the cell data one position forward
-    //         }
-    //     }
+        println!("Node Size: {}, page_size: {}", node.len(), page_full.len());
 
-    //     let cell = LeafNode::leaf_node_cell(node, cursor.cell_num);
-    //     let key_ptr = LeafNode::leaf_node_key(node, cursor.cell_num);
-    //     *key_ptr = key;
+        page_full.copy_from_slice(&node[0..PAGE_SIZE]);
 
-    //     Row::serialize_row(value, LeafNode::leaf_node_value(node, cursor.cell_num));
+        // Check if the leaf node is full, and handle the split if needed.
+        if num_cells as usize >= LEAF_NODE_MAX_CELLS {
+            println!("Split node required (not implemented)");
+            std::process::exit(1); 
+        }
 
-    //     let num_cells = LeafNode::leaf_node_num_cells(node);
-    //     *num_cells += 1;
-    // }
+        if cursor.cell_num < num_cells {
+            for i in (cursor.cell_num..num_cells).rev() {
+                let dest = Self::leaf_node_cell(node, i + 1);
+                let src = Self::leaf_node_cell(&mut page_full, i);
+                dest.copy_from_slice(src); // Move the cell data one position forward
+            }
+        }
+
+        let key_ptr = LeafNode::leaf_node_key(node, cursor.cell_num);
+        *key_ptr = key;
+
+        Row::serialize_row(value, LeafNode::leaf_node_value(node, cursor.cell_num));
+
+        let num_cells = LeafNode::leaf_node_num_cells(node);
+        *num_cells += 1;
+    }
 }

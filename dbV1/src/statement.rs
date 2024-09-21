@@ -92,11 +92,13 @@ impl Statement {
         let mut cursor = Cursor::new(table);
         cursor.table_end();
 
+        //
         // Testing needed here
         // Row::serialize_row(&self.row, cursor.cursor_value());
         //
-        
-        
+
+        LeafNode::leaf_node_insert(&mut cursor, self.row.id.into(), &self.row);
+
         return ExecuteResult::ExecuteSuccess;
     }
 
