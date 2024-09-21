@@ -33,7 +33,7 @@ impl<'a> Cursor<'a> {
         let root_data = self.table.pager.get_page(self.table.root_page_num);
         let num_cells = LeafNode::leaf_node_num_cells(root_data);
         self.cell_num = *num_cells;
-        self.end_of_table = true;
+        self.end_of_table = false;
     }
 
     pub fn advance_cursor(&mut self) {
@@ -48,7 +48,16 @@ impl<'a> Cursor<'a> {
     pub fn cursor_value(&mut self) -> &mut [u8] {
         let page_num = self.page_num;
         let page = self.table.pager.get_page(page_num);
+        let num_cells = *LeafNode::leaf_node_num_cells(page);
         // let mut node = LeafNode::new(page);
-        return LeafNode::leaf_node_value(page, self.cell_num);
+        // return LeafNode::leaf_node_value(page, self.cell_num);
+
+        if self.cell_num < num_cells {
+            // We are pointing at a valid cell within bounds
+            return LeafNode::leaf_node_value(page, self.cell_num);
+        } else {
+            println!(" === accessing new cell === ");
+            return LeafNode::leaf_node_value(page, num_cells);
+        }
     }
 }

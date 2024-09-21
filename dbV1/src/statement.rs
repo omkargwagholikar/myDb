@@ -93,7 +93,9 @@ impl Statement {
         cursor.table_end();
 
         // Testing needed here
-        Row::serialize_row(&self.row, cursor.cursor_value());
+        // Row::serialize_row(&self.row, cursor.cursor_value());
+        //
+        
         
         return ExecuteResult::ExecuteSuccess;
     }
