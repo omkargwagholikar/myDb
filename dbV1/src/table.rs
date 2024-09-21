@@ -13,7 +13,7 @@ impl Table {
         
         if pager.num_pages == 0 {
             let root_data = pager.get_page(0);
-            LeafNode::initialize_leaf_node(root_data);
+            // LeafNode::initialize_leaf_node(root_data);
         }
         
         Table {

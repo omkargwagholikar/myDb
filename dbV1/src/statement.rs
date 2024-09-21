@@ -92,11 +92,6 @@ impl Statement {
         let mut cursor = Cursor::new(table);
         cursor.table_end();
 
-        //
-        // Testing needed here
-        // Row::serialize_row(&self.row, cursor.cursor_value());
-        //
-
         LeafNode::leaf_node_insert(&mut cursor, self.row.id.into(), &self.row);
 
         return ExecuteResult::ExecuteSuccess;
@@ -105,9 +100,9 @@ impl Statement {
     pub fn execute_select(&self, table: &mut Table) -> ExecuteResult {
         let mut row: Row = Row::new();
         let mut cursor = Cursor::new(table);
+        println!("In select");
         cursor.table_start();
         println!("Id\tUsername\tEmail");
-        
         while !cursor.end_of_table {
             Row::deserialize_row(cursor.cursor_value(), &mut row);
             cursor.advance_cursor();

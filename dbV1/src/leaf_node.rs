@@ -41,8 +41,6 @@ impl LeafNode{
 
         let mut page_full: Vec<u8> = vec![0u8; PAGE_SIZE];
 
-        println!("Node Size: {}, page_size: {}", node.len(), page_full.len());
-
         page_full.copy_from_slice(&node[0..PAGE_SIZE]);
 
         // Check if the leaf node is full, and handle the split if needed.

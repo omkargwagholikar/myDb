@@ -22,11 +22,10 @@ impl<'a> Cursor<'a> {
     pub fn table_start(&mut self) {
         self.cell_num = 0;
         self.page_num = self.table.root_page_num;
-
         let root_data = self.table.pager.get_page(self.page_num);
         let num_cells = LeafNode::leaf_node_num_cells(root_data);
-
-        self.end_of_table = *num_cells == 0;        
+        self.end_of_table = *num_cells == 0;
+        println!("table_start\npage number: {} has {} cells", self.page_num, LeafNode::leaf_node_num_cells(root_data));
     }
 
     pub fn table_end(&mut self) {
