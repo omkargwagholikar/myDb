@@ -59,19 +59,17 @@ impl Pager {
 
         if self.pages[page_num].is_none() {
             let mut page = vec![0u8; PAGE_SIZE];
+            LeafNode::initialize_leaf_node(&mut page);
             let num_pages = self.file_length / PAGE_SIZE;
             
             if page_num < num_pages {
-                // println!("Not found page: {}, total pages: {}", page_num, num_pages);
                 self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
                 self.file.read_exact(&mut page).expect("Error in reading");
             } else {
-                println!("Reading partial page, unexpected case. \nFile length: {}\nPage Num: {}\nNum Pages: {num_pages}", self.file_length, page_num);
                 self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
                 self.file.read(&mut page).expect("Error in reading partially complete page");
             }
 
-            println!("get_page\npage number: {page_num} has {} cells", LeafNode::leaf_node_num_cells(&mut page));
             self.pages[page_num] = Some(page);
 
             if page_num >= self.num_pages {

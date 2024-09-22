@@ -15,7 +15,8 @@ pub enum PrepareResult {
 
 pub enum ExecuteResult {
     ExecuteTableFull,
-    ExecuteSuccess
+    ExecuteSuccess,
+    ExecuteDuplicateKey
 }
 
 pub struct Statement {
@@ -84,23 +85,35 @@ impl Statement {
     }
 
     pub fn execute_insert(&self, table: &mut Table) -> ExecuteResult {
-        let root_data = table.pager.get_page(table.root_page_num);
+        let mut cursor = Cursor::new(table);
+    
+        let root_data = cursor.table.pager.get_page(cursor.table.root_page_num);
         let num_cells = *LeafNode::leaf_node_num_cells(root_data);
-        if num_cells as usize >= TABLE_MAX_ROWS {
+    
+        if num_cells as usize >= LEAF_NODE_MAX_CELLS {
             return ExecuteResult::ExecuteTableFull;
         }
-        let mut cursor = Cursor::new(table);
-        cursor.table_end();
-
-        LeafNode::leaf_node_insert(&mut cursor, self.row.id.into(), &self.row);
-
+    
+        let key_to_insert = self.row.id as i32;
+        cursor.table_find(key_to_insert);
+        println!("Inserting {} at index {}", self.row.id, cursor.cell_num);
+    
+        let root_data = cursor.table.pager.get_page(cursor.table.root_page_num);
+        if cursor.cell_num < num_cells {
+            let key_at_index = LeafNode::leaf_node_key(root_data, cursor.cell_num);
+            if *key_at_index == key_to_insert {
+                return ExecuteResult::ExecuteDuplicateKey;
+            }
+        }
+    
+        LeafNode::leaf_node_insert(&mut cursor, key_to_insert, &self.row);
         return ExecuteResult::ExecuteSuccess;
     }
+    
 
     pub fn execute_select(&self, table: &mut Table) -> ExecuteResult {
         let mut row: Row = Row::new();
         let mut cursor = Cursor::new(table);
-        println!("In select");
         cursor.table_start();
         println!("Id\tUsername\tEmail");
         while !cursor.end_of_table {

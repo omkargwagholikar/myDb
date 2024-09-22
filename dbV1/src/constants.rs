@@ -1,6 +1,6 @@
 use std::mem::size_of;
 pub const COLUMN_USERNAME_SIZE: usize = 32;
-pub const COLUMN_EMAIL_SIZE: usize = 255;
+pub const COLUMN_EMAIL_SIZE: usize = 256;
 pub const ID_SIZE: usize = size_of::<i8>() as usize;
 pub const USERNAME_SIZE: usize = size_of::<[char; COLUMN_USERNAME_SIZE]>() as usize;
 pub const EMAIL_SIZE: usize = size_of::<[char; COLUMN_USERNAME_SIZE]>() as usize;
@@ -10,11 +10,11 @@ pub const EMAIL_OFFSET: usize = USERNAME_OFFSET + USERNAME_SIZE;
 pub const ROW_SIZE: usize = ID_SIZE + USERNAME_SIZE + EMAIL_SIZE;
 pub const PAGE_SIZE: usize = 4096;
 pub const TABLE_MAX_PAGES: usize = 100;
-pub const ROWS_PER_PAGE: usize = PAGE_SIZE / ROW_SIZE;
-pub const TABLE_MAX_ROWS: usize = ROWS_PER_PAGE * TABLE_MAX_PAGES;
+// pub const ROWS_PER_PAGE: usize = PAGE_SIZE / ROW_SIZE;
+// pub const TABLE_MAX_ROWS: usize = ROWS_PER_PAGE * TABLE_MAX_PAGES;
 
 pub const NODE_TYPE_SIZE: usize = size_of::<i8>() as usize;
-// pub const NODE_TYPE_OFFSET: usize = 0;
+pub const NODE_TYPE_OFFSET: usize = 0;
 pub const IS_ROOT_SIZE: usize = size_of::<i8>() as usize;
 // pub const IS_ROOT_OFFSET: usize = NODE_TYPE_SIZE;
 pub const PARENT_POINTER_SIZE: usize = size_of::<i32>() as usize;
@@ -25,7 +25,7 @@ pub const LEAF_NODE_NUM_CELLS_SIZE: usize = size_of::<i32>() as usize;
 pub const LEAF_NODE_NUM_CELLS_OFFSET: usize = COMMON_NODE_HEADER_SIZE;
 pub const LEAF_NODE_HEADER_SIZE: usize = COMMON_NODE_HEADER_SIZE + LEAF_NODE_NUM_CELLS_SIZE;
 
-pub const LEAF_NODE_KEY_SIZE: usize = size_of::<i32>() as usize;
+pub const LEAF_NODE_KEY_SIZE: usize = size_of::<i8>() as usize;
 pub const LEAF_NODE_KEY_OFFSET: usize = 0;
 pub const LEAF_NODE_VALUE_SIZE: usize = ROW_SIZE;
 pub const LEAF_NODE_VALUE_OFFSET: usize = LEAF_NODE_KEY_OFFSET + LEAF_NODE_KEY_SIZE;
