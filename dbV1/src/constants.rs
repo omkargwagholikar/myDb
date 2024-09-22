@@ -25,7 +25,7 @@ pub const LEAF_NODE_NUM_CELLS_SIZE: usize = size_of::<i32>() as usize;
 pub const LEAF_NODE_NUM_CELLS_OFFSET: usize = COMMON_NODE_HEADER_SIZE;
 pub const LEAF_NODE_HEADER_SIZE: usize = COMMON_NODE_HEADER_SIZE + LEAF_NODE_NUM_CELLS_SIZE;
 
-pub const LEAF_NODE_KEY_SIZE: usize = size_of::<i8>() as usize;
+pub const LEAF_NODE_KEY_SIZE: usize = size_of::<i32>() as usize;
 pub const LEAF_NODE_KEY_OFFSET: usize = 0;
 pub const LEAF_NODE_VALUE_SIZE: usize = ROW_SIZE;
 pub const LEAF_NODE_VALUE_OFFSET: usize = LEAF_NODE_KEY_OFFSET + LEAF_NODE_KEY_SIZE;
