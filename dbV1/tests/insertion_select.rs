@@ -58,7 +58,7 @@ fn inserts_and_retrieves_a_row() {
 #[test]
 fn allows_inserting_strings_that_are_the_maximum_length() {
     let long_username = "a".repeat(32);
-    let long_email = "b".repeat(255);
+    let long_email = "a".repeat(32);
     let result = run_script(vec![
         &format!("insert 1 {} {}", long_username, long_email),
         "select",

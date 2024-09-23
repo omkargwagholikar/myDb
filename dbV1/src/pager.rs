@@ -66,8 +66,8 @@ impl Pager {
                 self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
                 self.file.read_exact(&mut page).expect("Error in reading");
             } else {
-                self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
-                self.file.read(&mut page).expect("Error in reading partially complete page");
+                // self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
+                // self.file.read(&mut page).expect("Error in reading partially complete page");                
             }
 
             self.pages[page_num] = Some(page);

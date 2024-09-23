@@ -24,13 +24,13 @@ impl LeafNode{
 
     pub fn leaf_node_key(node: &mut Vec<u8>, cell_num: i32) -> &mut i32 {
         let start = LEAF_NODE_HEADER_SIZE + (cell_num as usize) * LEAF_NODE_CELL_SIZE;
-        let start_value = start + LEAF_NODE_KEY_OFFSET;
-        let end_value = start + LEAF_NODE_KEY_SIZE;
-        let key_byte = &mut node[start_value..end_value];
+        let key_offset = start + LEAF_NODE_KEY_OFFSET;
+        let key_bytes = &mut node[key_offset..key_offset + LEAF_NODE_KEY_SIZE];
         unsafe { 
-            return  &mut *(key_byte.as_mut_ptr() as *mut i32);
+            &mut *(key_bytes.as_mut_ptr() as *mut i32)
         }
     }
+    
 
     pub fn leaf_node_value(node: &mut Vec<u8>, cell_num: i32) -> &mut [u8] {
         let start_node = LEAF_NODE_HEADER_SIZE + (cell_num as usize) * LEAF_NODE_CELL_SIZE;
@@ -86,14 +86,15 @@ impl LeafNode{
 
         let key_ptr = LeafNode::leaf_node_key(node, cursor.cell_num);
         *key_ptr = key;
-
         Row::serialize_row(value, LeafNode::leaf_node_value(node, cursor.cell_num));
 
         let num_cells = LeafNode::leaf_node_num_cells(node);
         *num_cells += 1;
+
     }
 
     pub fn leaf_node_search(cursor: &mut Cursor, page_num: usize, key: i32) {
+
         let page = cursor.table.pager.get_page(page_num);
         let num_cells = *Self::leaf_node_num_cells(page);
         let mut min_index = 0;
@@ -103,15 +104,11 @@ impl LeafNode{
             let mid_index = min_index + (high_index - min_index) / 2;
     
             let key_at_index = *Self::leaf_node_key(page, mid_index);
-            let mut row = Row::new();
-            Row::deserialize_row(&Self::leaf_node_cell(page, mid_index), &mut row);
-            println!("{} {}", key_at_index, row.id);
-            // println!("{} {} {} {}", high_index, mid_index, min_index, key_at_index);
     
-            if key == row.id as i32 {
+            if key == key_at_index {
                 cursor.cell_num = mid_index;
                 return;
-            } else if key < row.id as i32 {
+            } else if key < key_at_index {
                 if mid_index == 0 {
                     break; 
                 }
@@ -122,6 +119,5 @@ impl LeafNode{
         }
             
         cursor.cell_num = min_index;
-    }
-    
+    }    
 }

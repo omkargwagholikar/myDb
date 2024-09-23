@@ -96,7 +96,6 @@ impl Statement {
     
         let key_to_insert = self.row.id as i32;
         cursor.table_find(key_to_insert);
-        println!("Inserting {} at index {}", self.row.id, cursor.cell_num);
     
         let root_data = cursor.table.pager.get_page(cursor.table.root_page_num);
         if cursor.cell_num < num_cells {

@@ -1,7 +1,7 @@
 use std::mem::size_of;
 pub const COLUMN_USERNAME_SIZE: usize = 32;
 pub const COLUMN_EMAIL_SIZE: usize = 256;
-pub const ID_SIZE: usize = size_of::<i8>() as usize;
+pub const ID_SIZE: usize = size_of::<i32>() as usize;
 pub const USERNAME_SIZE: usize = size_of::<[char; COLUMN_USERNAME_SIZE]>() as usize;
 pub const EMAIL_SIZE: usize = size_of::<[char; COLUMN_USERNAME_SIZE]>() as usize;
 pub const ID_OFFSET: usize = 0;
