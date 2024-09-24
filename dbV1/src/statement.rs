@@ -127,7 +127,17 @@ impl Statement {
     pub fn execute_statement(&mut self, table: &mut Table) {
         match self.statement_type {
             StatementType::StatementInsert => {
-                self.execute_insert(table);
+                match self.execute_insert(table) {
+                    ExecuteResult::ExecuteTableFull => {
+                        println!("Table full");
+                    },
+                    ExecuteResult::ExecuteSuccess => {
+
+                    },
+                    ExecuteResult::ExecuteDuplicateKey => {
+                        println!("Duplicate Key, please use another key")
+                    },
+                }
             },
             StatementType::StatementSelect => {
                 self.execute_select(table);

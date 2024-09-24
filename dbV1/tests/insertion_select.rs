@@ -118,10 +118,10 @@ fn insert_many() {
     drop_db();
     
     let result = run_script(vec![
+        "insert 2 user1 person1@example.com", 
         "insert 1 user1 person1@example.com",
-        "insert 2 user1 person1@example.com",
-        "insert 3 user1 person1@example.com",
         "insert 4 user1 person1@example.com",
+        "insert 3 user1 person1@example.com",
         "select",
         ".exit"
     ]);
@@ -136,6 +136,27 @@ fn insert_many() {
         "2\tuser1\t\tperson1@example.com",
         "3\tuser1\t\tperson1@example.com",
         "4\tuser1\t\tperson1@example.com", 
+        "Executed. ",
+        "dbv1 > "
+    ]);
+
+    drop_db();
+}
+
+
+#[test]
+fn alert_duplicate_keys() {
+    drop_db();
+
+    let result = run_script(vec![
+        "insert 1 user1 person1@example.com",
+        "insert 1 user1 person1@example.com",
+        ".exit"
+    ]);
+
+    assert_eq!(result, vec![
+        "dbv1 > Executed. ",
+        "dbv1 > Duplicate Key, please use another key", 
         "Executed. ",
         "dbv1 > "
     ]);
