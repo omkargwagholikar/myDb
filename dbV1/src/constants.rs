@@ -24,6 +24,7 @@ pub const COMMON_NODE_HEADER_SIZE: usize = NODE_TYPE_SIZE + IS_ROOT_SIZE + PAREN
 pub const LEAF_NODE_NUM_CELLS_SIZE: usize = size_of::<i32>() as usize;
 pub const LEAF_NODE_NUM_CELLS_OFFSET: usize = COMMON_NODE_HEADER_SIZE;
 pub const LEAF_NODE_HEADER_SIZE: usize = COMMON_NODE_HEADER_SIZE + LEAF_NODE_NUM_CELLS_SIZE;
+pub const IS_ROOT_OFFSET:usize = NODE_TYPE_SIZE;
 
 pub const LEAF_NODE_KEY_SIZE: usize = size_of::<i32>() as usize;
 pub const LEAF_NODE_KEY_OFFSET: usize = 0;
@@ -31,7 +32,7 @@ pub const LEAF_NODE_VALUE_SIZE: usize = ROW_SIZE;
 pub const LEAF_NODE_VALUE_OFFSET: usize = LEAF_NODE_KEY_OFFSET + LEAF_NODE_KEY_SIZE;
 pub const LEAF_NODE_CELL_SIZE: usize = LEAF_NODE_KEY_SIZE + LEAF_NODE_VALUE_SIZE;
 pub const LEAF_NODE_SPACE_FOR_CELLS: usize = PAGE_SIZE - LEAF_NODE_HEADER_SIZE;
-pub const LEAF_NODE_MAX_CELLS: usize = LEAF_NODE_SPACE_FOR_CELLS / LEAF_NODE_CELL_SIZE;
+pub const LEAF_NODE_MAX_CELLS: usize = 12;
 
 pub const INTERNAL_NODE_NUM_KEYS_SIZE: usize = size_of::<i32>() as usize;
 pub const INTERNAL_NODE_NUM_KEYS_OFFSET: usize = COMMON_NODE_HEADER_SIZE;
@@ -43,3 +44,5 @@ pub const INTERNAL_NODE_KEY_SIZE: usize = size_of::<i32>() as usize;
 pub const INTERNAL_NODE_CHILD_SIZE: usize = size_of::<i32>() as usize;
 pub const INTERNAL_NODE_CELL_SIZE: usize = INTERNAL_NODE_CHILD_SIZE + INTERNAL_NODE_KEY_SIZE;
 
+pub const LEAF_NODE_RIGHT_SPLIT_COUNT:usize = (LEAF_NODE_MAX_CELLS + 1) / 2;
+pub const LEAF_NODE_LEFT_SPLIT_COUNT: usize = (LEAF_NODE_MAX_CELLS + 1) - LEAF_NODE_RIGHT_SPLIT_COUNT;

@@ -51,6 +51,10 @@ impl Pager {
         }
     }
 
+    pub fn get_unused_page(&self) -> usize{
+        return 0;
+    }
+
     pub fn get_page(&mut self, page_num: usize) -> &mut Vec<u8> {
         if page_num > TABLE_MAX_PAGES {
             println!("Tried to fetch page number out of bounds. {} > {}\n", page_num, TABLE_MAX_PAGES);

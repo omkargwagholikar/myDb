@@ -90,9 +90,10 @@ impl Statement {
         let root_data = cursor.table.pager.get_page(cursor.table.root_page_num);
         let num_cells = *LeafNode::leaf_node_num_cells(root_data);
     
-        if num_cells as usize >= LEAF_NODE_MAX_CELLS {
-            return ExecuteResult::ExecuteTableFull;
-        }
+        // if num_cells as usize >= LEAF_NODE_MAX_CELLS {
+        //     return ExecuteResult::ExecuteTableFull;
+        // }
+        
     
         let key_to_insert = self.row.id as i32;
         cursor.table_find(key_to_insert);
