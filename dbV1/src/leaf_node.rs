@@ -1,4 +1,4 @@
-use crate::{constants::*, cursor::Cursor, pager::Pager, row::Row, table};
+use crate::{constants::*, cursor::Cursor, internal_node::InternalNode, row::Row};
 
 #[derive(PartialEq)]
 pub enum NodeType {
@@ -110,9 +110,7 @@ impl LeafNode{
     }
 
     pub fn leaf_node_split_and_insert(cursor: &mut Cursor, _key: i32, value: &Row) {
-        // ===> IMPLEMENT get_unused_page <===
         let new_page_num: usize = cursor.table.pager.get_unused_page();
-        // let new_node: &mut Vec<u8> = cursor.table.pager.get_page(new_page_num);
         let mut copy_of_initial_vector: Vec<u8> = cursor.table.pager.get_page(cursor.page_num).clone();
         let is_old_root:bool = Self::is_node_root(&mut copy_of_initial_vector);
 
@@ -160,22 +158,46 @@ impl LeafNode{
 
         if is_old_root {
             // ===> IMPLEMENT create_new_root <===
-            // return Self::create_new_root(cursor, new_page_num);
+            return Self::create_new_root(cursor, new_page_num);
         } else {
             println!("Need to implement updating parent after split");
             std::process::exit(1);
         }
     }
 
-    // pub fn create_new_root(cursor: &mut Cursor, right_child_page_num: usize) {
-    //     let left_child_page_num = cursor.table.pager.num_pages;
-    //     let left_child = cursor.table.pager.get_page(left_child_page_num);
+    pub fn create_new_root(cursor: &mut Cursor, right_child_page_num: usize) {
+        let mut root = cursor.table.pager.get_page(cursor.table.root_page_num).clone();
+        {
+            let left_child_page_num = cursor.table.pager.num_pages;
+            let left_child = cursor.table.pager.get_page(left_child_page_num);
+            unsafe { 
+                std::ptr::copy_nonoverlapping(
+                    root.as_mut_ptr(), 
+                    left_child.as_mut_ptr(), 
+                    PAGE_SIZE
+                );
+            } 
+            Self::set_node_root(left_child, false);
+            InternalNode::initialize_internal_node(&mut root);
+            Self::set_node_root(&mut root, true);
+            *Self::leaf_node_num_cells(&mut root) = 1;
+            // *InternalNode::internal_node_child(root) = left_child_page_num;
+            // let left_child_max_key = get_node_max_key(left_child);
+            // *InternalNode::internal_node_key(root, 0) = left_child_max_key;
+        }
+        {
+            // let right_child = cursor.table.pager.get_page(right_child_page_num);
+            // *InternalNode::internal_node_right_child(root) = right_child_page_num;
+        }
 
-    //     let root = cursor.table.pager.get_page(cursor.table.root_page_num);
-    //     let right_child = cursor.table.pager.get_page(right_child_page_num);
-        
-    //     unsafe { std::ptr::copy_nonoverlapping(left_child.as_mut_ptr(), root.as_mut_ptr(), PAGE_SIZE);}
-    // }
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                &root, 
+                cursor.table.pager.get_page(cursor.table.root_page_num), 
+                PAGE_SIZE
+            );
+        }
+    }
 
     pub fn leaf_node_search(cursor: &mut Cursor, page_num: usize, key: i32) {
 

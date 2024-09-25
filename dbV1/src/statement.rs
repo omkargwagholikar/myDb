@@ -14,7 +14,6 @@ pub enum PrepareResult {
 }
 
 pub enum ExecuteResult {
-    ExecuteTableFull,
     ExecuteSuccess,
     ExecuteDuplicateKey
 }
@@ -93,7 +92,7 @@ impl Statement {
         // if num_cells as usize >= LEAF_NODE_MAX_CELLS {
         //     return ExecuteResult::ExecuteTableFull;
         // }
-        
+
     
         let key_to_insert = self.row.id as i32;
         cursor.table_find(key_to_insert);
@@ -129,9 +128,6 @@ impl Statement {
         match self.statement_type {
             StatementType::StatementInsert => {
                 match self.execute_insert(table) {
-                    ExecuteResult::ExecuteTableFull => {
-                        println!("Table full");
-                    },
                     ExecuteResult::ExecuteSuccess => {
 
                     },

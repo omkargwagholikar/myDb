@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::mem::size_of;
 pub const COLUMN_USERNAME_SIZE: usize = 32;
 pub const COLUMN_EMAIL_SIZE: usize = 256;
@@ -32,7 +33,7 @@ pub const LEAF_NODE_VALUE_SIZE: usize = ROW_SIZE;
 pub const LEAF_NODE_VALUE_OFFSET: usize = LEAF_NODE_KEY_OFFSET + LEAF_NODE_KEY_SIZE;
 pub const LEAF_NODE_CELL_SIZE: usize = LEAF_NODE_KEY_SIZE + LEAF_NODE_VALUE_SIZE;
 pub const LEAF_NODE_SPACE_FOR_CELLS: usize = PAGE_SIZE - LEAF_NODE_HEADER_SIZE;
-pub const LEAF_NODE_MAX_CELLS: usize = 12;
+pub const LEAF_NODE_MAX_CELLS: usize = LEAF_NODE_SPACE_FOR_CELLS / LEAF_NODE_CELL_SIZE;
 
 pub const INTERNAL_NODE_NUM_KEYS_SIZE: usize = size_of::<i32>() as usize;
 pub const INTERNAL_NODE_NUM_KEYS_OFFSET: usize = COMMON_NODE_HEADER_SIZE;

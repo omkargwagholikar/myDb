@@ -6,6 +6,7 @@ mod table;
 mod pager;
 mod cursor;
 mod leaf_node;
+mod internal_node;
 
 use input_buffer::InputBuffer;
 use statement::Statement;

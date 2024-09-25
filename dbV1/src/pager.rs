@@ -52,7 +52,10 @@ impl Pager {
     }
 
     pub fn get_unused_page(&self) -> usize{
-        return 0;
+        // This will give the pointer at the very end of the file,
+        // When get_page is then called on it, a new page will be 
+        // Created at the bottom of the file.
+        return self.num_pages;
     }
 
     pub fn get_page(&mut self, page_num: usize) -> &mut Vec<u8> {
