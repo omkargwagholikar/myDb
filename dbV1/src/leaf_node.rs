@@ -1,10 +1,5 @@
-use crate::{constants::*, cursor::Cursor, internal_node::InternalNode, row::Row};
+use crate::{constants::*, cursor::Cursor, internal_node::InternalNode, node::{Node, NodeType}, row::Row};
 
-#[derive(PartialEq)]
-pub enum NodeType {
-    NodeInternal,
-    NodeLeaf
-}
 
 pub struct LeafNode{
     
@@ -42,25 +37,8 @@ impl LeafNode{
     pub fn initialize_leaf_node(node: &mut Vec<u8>) {
         let num_cells = Self::leaf_node_num_cells(node);
         *num_cells = 0;
-        Self::set_node_type(node, NodeType::NodeLeaf);
+        Node::set_node_type(node, NodeType::NodeLeaf);
 
-    }
-
-    pub fn get_node_type(node: & Vec<u8>) -> NodeType{
-        let value: u8 = node[NODE_TYPE_OFFSET];
-        return match value {
-            0 => NodeType::NodeInternal,
-            1 => NodeType::NodeLeaf,
-            _ => panic!("Invalid node type!"), // Handle unexpected values
-        }
-    }
-
-    pub fn set_node_type(node: &mut Vec<u8>, node_type: NodeType) {
-        let value:u8 = match node_type {
-            NodeType::NodeInternal => 0,
-            NodeType::NodeLeaf => 1,
-        };
-        node[NODE_TYPE_OFFSET] = value;
     }
 
     pub fn leaf_node_insert(cursor: &mut Cursor, key: i32, value: & Row) {
@@ -95,24 +73,10 @@ impl LeafNode{
 
     }
 
-    pub fn is_node_root(node: &Vec<u8>) -> bool{
-        let val = &node[0..IS_ROOT_OFFSET];
-        if val[0] > 0 {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    pub fn set_node_root(page: &mut Vec<u8>, is_root: bool) {
-        // This will only work if the size of is_root is one byte only
-        page[IS_ROOT_OFFSET] = is_root as u8;
-    }
-
     pub fn leaf_node_split_and_insert(cursor: &mut Cursor, _key: i32, value: &Row) {
         let new_page_num: usize = cursor.table.pager.get_unused_page();
         let mut copy_of_initial_vector: Vec<u8> = cursor.table.pager.get_page(cursor.page_num).clone();
-        let is_old_root:bool = Self::is_node_root(&mut copy_of_initial_vector);
+        let is_old_root:bool = Node::is_node_root(&mut copy_of_initial_vector);
 
         {
             let new_node: &mut Vec<u8> = cursor.table.pager.get_page(new_page_num);
@@ -177,9 +141,9 @@ impl LeafNode{
                     PAGE_SIZE
                 );
             } 
-            Self::set_node_root(left_child, false);
+            Node::set_node_root(left_child, false);
             InternalNode::initialize_internal_node(&mut root);
-            Self::set_node_root(&mut root, true);
+            Node::set_node_root(&mut root, true);
             *Self::leaf_node_num_cells(&mut root) = 1;
             // *InternalNode::internal_node_child(root) = left_child_page_num;
             // let left_child_max_key = get_node_max_key(left_child);

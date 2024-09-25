@@ -5,6 +5,7 @@ mod constants;
 mod table;
 mod pager;
 mod cursor;
+mod node;
 mod leaf_node;
 mod internal_node;
 

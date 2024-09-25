@@ -1,4 +1,4 @@
-use crate::{table::Table, leaf_node::LeafNode, leaf_node::NodeType};
+use crate::{leaf_node::LeafNode, node::{Node, NodeType}, table::Table};
 
 pub struct Cursor<'a> {
     pub table: &'a mut Table,
@@ -41,7 +41,7 @@ impl<'a> Cursor<'a> {
         let root_page_num = self.table.root_page_num;
         let root_node = self.table.pager.get_page(root_page_num);
 
-        if LeafNode::get_node_type(&root_node) == NodeType::NodeLeaf {
+        if Node::get_node_type(&root_node) == NodeType::NodeLeaf {
             return LeafNode::leaf_node_search(self, root_page_num, key);
         } else {
             println!("Need to implement searching internal nodes");
