@@ -37,16 +37,26 @@ impl InternalNode {
     //     unsafe { &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) }
     // }
 
-    // pub fn internal_node_child(root: &mut Vec<u8>, child_num: i32) -> &mut i32{
-    //     let num_keys = *Self::internal_node_num_keys(root);
-    //     if child_num > num_keys {
-    //         println!("Trying to access child_num {child_num} > num_keys {num_keys}");
-    //         std::process::exit(1);
-    //     } else if child_num == num_keys {
-    //         return  Self::internal_node_right_child(root);
-    //     } else {
-    //         return Self::internal_node_cell(root, child_num);
-    //     }
-    // }
+    pub fn internal_node_key(root: &mut Vec<u8>, key_num: i32) -> &mut i32{
+        let int_node_cell = Self::internal_node_cell(root, key_num) as *mut i32;
+        // unsafe {
+        //     &mut *int_node_cell.add((INTERNAL_NODE_CHILD_SIZE / std::mem::size_of::<i32>()) as usize)
+        // }
+        unsafe  {
+            &mut *int_node_cell.add(INTERNAL_NODE_CHILD_SIZE)
+        }        
+    }
+
+    pub fn internal_node_child(root: &mut Vec<u8>, child_num: i32) -> &mut i32{
+        let num_keys = *Self::internal_node_num_keys(root);
+        if child_num > num_keys {
+            println!("Trying to access child_num {child_num} > num_keys {num_keys}");
+            std::process::exit(1);
+        } else if child_num == num_keys {
+            return  Self::internal_node_right_child(root);
+        } else {
+            return Self::internal_node_cell(root, child_num);
+        }
+    }
 }
 

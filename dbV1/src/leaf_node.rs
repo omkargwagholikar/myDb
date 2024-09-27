@@ -146,12 +146,12 @@ impl LeafNode{
             InternalNode::initialize_internal_node(&mut root);
             Node::set_node_root(&mut root, true);
             *Self::leaf_node_num_cells(&mut root) = 1;
-            // *InternalNode::internal_node_child(&mut root, 0) = left_child_page_num as i32;
-            // let left_child_max_key = Node::get_node_max_key(left_child);
-            // *InternalNode::internal_node_key(root, 0) = left_child_max_key;
+            *InternalNode::internal_node_child(&mut root, 0) = left_child_page_num as i32;
+            let left_child_max_key = Node::get_node_max_key(left_child);
+            *InternalNode::internal_node_key(&mut root, 0) = *left_child_max_key;
         }
         {
-            let right_child = cursor.table.pager.get_page(right_child_page_num);
+            // let right_child = cursor.table.pager.get_page(right_child_page_num);
             *InternalNode::internal_node_right_child(&mut root) = right_child_page_num as i32;
         }
 

@@ -43,14 +43,15 @@ impl Node {
         node[NODE_TYPE_OFFSET] = value;
     }
 
-    // pub fn get_node_max_key(node: &mut Vec<u8>) -> &mut i32{
-    //     match Self::get_node_type(node) {
-    //         NodeType::NodeInternal => {
-    //             return InternalNode::internal_node_key(node, *InternalNode::interal_node_num_keys(node)-1);
-    //         },
-    //         NodeType::NodeLeaf => {
-    //             return LeafNode::leaf_node_key(node, *LeafNode::leaf_node_num_cells(node) - 1);
-    //         }
-    //     }
-    // }
+    pub fn get_node_max_key(node: &mut Vec<u8>) -> &mut i32{
+        let mut temp = node.clone();
+        match Self::get_node_type(&temp) {
+            NodeType::NodeInternal => {
+                return InternalNode::internal_node_key(node, *InternalNode::internal_node_num_keys(&mut temp)-1);
+            },
+            NodeType::NodeLeaf => {
+                return LeafNode::leaf_node_key(node, *LeafNode::leaf_node_num_cells(&mut temp) - 1);
+            }
+        }
+    }
 }
