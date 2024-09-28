@@ -12,8 +12,15 @@ impl LeafNode{
     }
 
     pub fn leaf_node_cell(node: &mut Vec<u8>, cell_num: i32) -> &mut [u8] {
-        let start = LEAF_NODE_HEADER_SIZE + (cell_num as usize) * LEAF_NODE_CELL_SIZE;
-        let end = start + LEAF_NODE_CELL_SIZE;
+        let cell_num = cell_num as usize;
+        println!("{} {}", cell_num, LEAF_NODE_CELL_SIZE);
+        let start =  LEAF_NODE_HEADER_SIZE.checked_add(
+            cell_num.checked_mul(
+                LEAF_NODE_CELL_SIZE
+            ).expect("> attempt to multiply with overflow")
+        ).expect("> attempt to add with overflow");
+
+        let end = start.checked_add(LEAF_NODE_CELL_SIZE).expect("> attempt to add with overflow");
         &mut node[start..end]
     }
 
