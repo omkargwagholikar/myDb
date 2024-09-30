@@ -89,14 +89,3 @@ fn main() {
         }
     }
 }
-
-// use cursor::Cursor;
-// use row::Row;
-// let mut cursor = Cursor::new(&file_name);
-// cursor.table_start();
-// let mut row: Row = Row::new();
-// while !cursor.end_of_table {
-//     Row::deserialize_row(cursor.cursor_value(), &mut row);
-//     cursor.advance_cursor();
-//     row.print_row();
-// }

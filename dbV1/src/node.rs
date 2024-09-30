@@ -1,4 +1,6 @@
-use crate::{constants::*, internal_node::InternalNode, leaf_node::LeafNode};
+use std::io::Write;
+
+use crate::{constants::*, internal_node::InternalNode, leaf_node::LeafNode, pager::Pager};
 
 
 #[derive(PartialEq)]
@@ -54,4 +56,41 @@ impl Node {
             }
         }
     }
+
+    pub fn indent(level: i32) {
+        for _ in 0..level {
+            print!(" ");
+        }
+        std::io::stdout().flush().unwrap();
+    }
+
+    // pub fn print_tree(pager: &mut Pager, page_num: usize, indent_level: i32) {
+    //     let node = pager.get_page(page_num);
+
+    //     match Self::get_node_type(node) {
+    //         NodeType::NodeInternal => {
+    //             let num_keys = *InternalNode::internal_node_num_keys(node);
+    //             Self::indent(indent_level);
+    //             println!("- internal size: {}", num_keys);
+    //             for i in 0..num_keys {
+    //                 let child = *InternalNode::internal_node_child(node, i);
+    //                 Self::print_tree(pager, child as usize, indent_level + 1);
+
+    //                 Self::indent(indent_level + 1);
+    //                 println!("- key {}", InternalNode::internal_node_key(node, i));
+    //             }
+    //             let child = *InternalNode::internal_node_right_child(node);
+    //             Self::print_tree(pager, child as usize, indent_level + 1);
+    //         },
+    //         NodeType::NodeLeaf => {
+    //             let num_keys = *LeafNode::leaf_node_num_cells(node);
+    //             Self::indent(indent_level);
+    //             println!("- leaf size: {}", num_keys);
+    //             for i in 0..num_keys {
+    //                 Self::indent(indent_level + 1);
+    //                 println!("- {}", *LeafNode::leaf_node_key(node, i));
+    //             }
+    //         },
+    //     }        
+    // }
 }
