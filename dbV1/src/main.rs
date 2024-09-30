@@ -10,6 +10,7 @@ mod leaf_node;
 mod internal_node;
 
 use input_buffer::InputBuffer;
+use node::Node;
 use statement::Statement;
 use table::Table;
 
@@ -33,6 +34,11 @@ fn do_meta_command(input_buffer: &InputBuffer, table: &mut Table) -> MetaCommand
     } else if input_buffer.buffer == ".drop" {
         table.db_close();
         println!("Table dropped");
+        MetaCommandResult::MetaCommandSuccess
+    } else if input_buffer.buffer == ".btree" {
+        println!("Tree: ");
+        Node::print_tree(&mut table.pager, 0, 0);
+        println!("Tree complete");
         MetaCommandResult::MetaCommandSuccess
     } else {
         MetaCommandResult::MetaCommandUnrecognizedCommand

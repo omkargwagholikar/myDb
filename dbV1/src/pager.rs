@@ -3,6 +3,7 @@ use crate::leaf_node::LeafNode;
 
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
+use std::os::unix::fs::FileExt;
 
 pub struct Pager {
     pub file: File,
@@ -85,6 +86,61 @@ impl Pager {
         }
         return  self.pages[page_num].as_mut().unwrap();
     }
+
+    // pub fn get_page_at(&self, page_num: usize) -> &Vec<u8> {
+    //     if page_num > TABLE_MAX_PAGES {
+    //         println!("Tried to fetch page number out of bounds. {} > {}\n", page_num, TABLE_MAX_PAGES);
+    //         std::process::exit(1);            
+    //     }
+
+    //     if self.pages[page_num].is_none() {
+    //         let mut page = vec![0u8; PAGE_SIZE];
+    //         LeafNode::initialize_leaf_node(&mut page);
+    //         let num_pages = self.file_length / PAGE_SIZE;
+            
+    //         if page_num < num_pages {
+    //             // self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
+    //             self.file.read_exact_at(&mut page, (page_num * PAGE_SIZE) as u64).expect("Error in reading");
+    //         } else {
+    //             // self.file.seek(SeekFrom::Start((page_num * PAGE_SIZE) as u64)).expect("Error in seeking to eof");
+    //             // self.file.read(&mut page).expect("Error in reading partially complete page");                
+    //         }
+
+    //         // self.pages[page_num] = Some(page);
+
+    //         // if page_num >= self.num_pages {
+    //         //     self.num_pages += 1;
+    //         // }
+    //         return page.as_ref();
+    //     } else {
+    //         let page = self.pages[page_num].unwrap().as_ref();
+    //         return  page;
+    //     }
+    // }
+
+    pub fn get_page_at(&self, page_num: usize) -> Vec<u8> {
+        if page_num > TABLE_MAX_PAGES {
+            println!("Tried to fetch page number out of bounds. {} > {}\n", page_num, TABLE_MAX_PAGES);
+            std::process::exit(1);            
+        }
+    
+        if let Some(page) = &self.pages[page_num] {
+            page.clone()
+        } else {
+            let mut page = vec![0u8; PAGE_SIZE];
+            LeafNode::initialize_leaf_node(&mut page);
+            let num_pages = self.file_length / PAGE_SIZE;
+            
+            if page_num < num_pages {
+                self.file.read_exact_at(&mut page, (page_num * PAGE_SIZE) as u64).expect("Error in reading");
+            } 
+    
+            page
+        }
+    }
+
+    
+    
 
     pub fn flush(&mut self, page_num: usize) {
         if self.pages[page_num].is_none() {
