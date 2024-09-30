@@ -11,9 +11,9 @@ impl LeafNode{
         unsafe { &mut *(num_cells_bytes.as_mut_ptr() as *mut i32) }
     }
 
-    pub fn leaf_node_cell(node: &mut Vec<u8>, cell_num: i32) -> &mut [u8] {
-        let cell_num = cell_num as usize;
-        println!("{} {}", cell_num, LEAF_NODE_CELL_SIZE);
+    pub fn leaf_node_cell(node: &mut Vec<u8>, cell_num: usize) -> &mut [u8] {
+        // let cell_num = cell_num as usize;
+        // println!("{} {}", cell_num, LEAF_NODE_CELL_SIZE);
         let start =  LEAF_NODE_HEADER_SIZE.checked_add(
             cell_num.checked_mul(
                 LEAF_NODE_CELL_SIZE
@@ -65,8 +65,8 @@ impl LeafNode{
 
         if cursor.cell_num < num_cells {
             for i in (cursor.cell_num..num_cells).rev() {
-                let dest = Self::leaf_node_cell(node, i + 1);
-                let src = Self::leaf_node_cell(&mut page_full, i);
+                let dest = Self::leaf_node_cell(node, i as usize + 1);
+                let src = Self::leaf_node_cell(&mut page_full, i as usize);
                 dest.copy_from_slice(src);
             }
         }
@@ -91,13 +91,21 @@ impl LeafNode{
             let destin_node = new_node;
             for i in (LEAF_NODE_LEFT_SPLIT_COUNT..(1 + LEAF_NODE_MAX_CELLS)).rev() {
                 let index_within_node = i % LEAF_NODE_LEFT_SPLIT_COUNT;
-                let destination = Self::leaf_node_cell(destin_node, index_within_node as i32);
+                let destination = Self::leaf_node_cell(destin_node, index_within_node);
                 if i as i32 == cursor.cell_num {
                     Row::serialize_row(value, destination);
-                } else {
+                } else if  i > cursor.cell_num as usize {
                     unsafe { 
                         std::ptr::copy_nonoverlapping(
-                            Self::leaf_node_cell(&mut copy_of_initial_vector, (i as i32)-1).as_mut_ptr(), 
+                            Self::leaf_node_cell(&mut copy_of_initial_vector, i-1).as_mut_ptr(), 
+                            destination.as_mut_ptr(),
+                            LEAF_NODE_CELL_SIZE) 
+                    };
+                }
+                else {
+                    unsafe { 
+                        std::ptr::copy_nonoverlapping(
+                            Self::leaf_node_cell(&mut copy_of_initial_vector, i).as_mut_ptr(), 
                             destination.as_mut_ptr(),
                             LEAF_NODE_CELL_SIZE) 
                     };
@@ -112,13 +120,23 @@ impl LeafNode{
             let destin_node = old_node;
             for i in (0..LEAF_NODE_LEFT_SPLIT_COUNT).rev() {
                 let index_within_node = i % LEAF_NODE_LEFT_SPLIT_COUNT;
-                let destination = Self::leaf_node_cell(destin_node, index_within_node as i32);
+                let destination = Self::leaf_node_cell(destin_node, index_within_node);
                 if i as i32 == cursor.cell_num {
                     Row::serialize_row(value, destination);
+                } else if i > cursor.cell_num as usize{
+                    unsafe { 
+                        // println!("1. Potential problem here: {} {}", Self::leaf_node_cell(&mut copy_of_initial_vector, i-1).len(), destination.len());
+                        std::ptr::copy_nonoverlapping(
+                            Self::leaf_node_cell(&mut copy_of_initial_vector, i-1).as_mut_ptr(), 
+                            destination.as_mut_ptr(),
+                            LEAF_NODE_CELL_SIZE) 
+                    };
                 } else {
                     unsafe { 
+                        // println!("2. Potential problem here: {} {}", Self::leaf_node_cell(&mut copy_of_initial_vector, i).len(), destination.len());
+                        // println!(">");
                         std::ptr::copy_nonoverlapping(
-                            Self::leaf_node_cell(&mut copy_of_initial_vector, (i as i32)-1).as_mut_ptr(), 
+                            Self::leaf_node_cell(&mut copy_of_initial_vector, i).as_mut_ptr(), 
                             destination.as_mut_ptr(),
                             LEAF_NODE_CELL_SIZE) 
                     };
@@ -129,9 +147,10 @@ impl LeafNode{
 
         if is_old_root {
             // ===> IMPLEMENT create_new_root <===
+            // println!("In create_new_root");
             return Self::create_new_root(cursor, new_page_num);
         } else {
-            println!("Need to implement updating parent after split");
+            // println!("Need to implement updating parent after split");
             std::process::exit(1);
         }
     }
@@ -142,33 +161,43 @@ impl LeafNode{
             let left_child_page_num = cursor.table.pager.num_pages;
             let left_child = cursor.table.pager.get_page(left_child_page_num);
             unsafe { 
-                std::ptr::copy_nonoverlapping(
-                    root.as_mut_ptr(), 
+                std::ptr::copy(
+                    root.as_ptr(), 
                     left_child.as_mut_ptr(), 
                     PAGE_SIZE
                 );
             } 
-
+            // println!("create_new_root upto here: 1");
             Node::set_node_root(left_child, false);
+            // println!("create_new_root upto here: 2");
             InternalNode::initialize_internal_node(&mut root);
+            // println!("create_new_root upto here: 3");
             Node::set_node_root(&mut root, true);
+            // println!("create_new_root upto here: 4");
             *Self::leaf_node_num_cells(&mut root) = 1;
+            // println!("create_new_root upto here: 5");
             *InternalNode::internal_node_child(&mut root, 0) = left_child_page_num as i32;
+            // println!("create_new_root upto here: 6");
             let left_child_max_key = Node::get_node_max_key(left_child);
+            // println!("create_new_root upto here: 7");
             *InternalNode::internal_node_key(&mut root, 0) = *left_child_max_key;
+            // println!("create_new_root upto here: 8");
         }
         {
             // let right_child = cursor.table.pager.get_page(right_child_page_num);
             *InternalNode::internal_node_right_child(&mut root) = right_child_page_num as i32;
+            // println!("create_new_root upto here: 9");
         }
-
+        // println!("{}", root.len());
+        // println!("{}", cursor.table.pager.get_page(cursor.table.root_page_num).len());
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                &root, 
-                cursor.table.pager.get_page(cursor.table.root_page_num), 
+            std::ptr::copy(
+                root.as_ptr(), 
+                cursor.table.pager.get_page(cursor.table.root_page_num).as_mut_ptr(), 
                 PAGE_SIZE
             );
         }
+        // println!("create_new_root upto here: 10");
     }
 
     pub fn leaf_node_search(cursor: &mut Cursor, page_num: usize, key: i32) {
