@@ -1,4 +1,6 @@
 use crate::constants::*;
+use crate::cursor::Cursor;
+use crate::leaf_node::LeafNode;
 use crate::node::{Node, NodeType};
 
 pub struct InternalNode{
@@ -39,9 +41,6 @@ impl InternalNode {
 
     pub fn internal_node_key(root: &mut Vec<u8>, key_num: i32) -> &mut i32{
         let int_node_cell = Self::internal_node_cell(root, key_num) as *mut i32;
-        // unsafe {
-        //     &mut *int_node_cell.add((INTERNAL_NODE_CHILD_SIZE / std::mem::size_of::<i32>()) as usize)
-        // }
         unsafe  {
             &mut *int_node_cell.add(INTERNAL_NODE_CHILD_SIZE)
         }        
@@ -56,6 +55,34 @@ impl InternalNode {
             return  Self::internal_node_right_child(root);
         } else {
             return Self::internal_node_cell(root, child_num);
+        }
+    }
+
+    pub fn internal_node_find(cursor: &mut Cursor, page_num: usize, key: i32){
+        let node = cursor.table.pager.get_page(page_num);
+        let num_keys = *Self::internal_node_num_keys(node);
+
+        let mut low = 0;
+        let mut high= num_keys;
+
+        while low != high {
+            let index = low + (high - low) / 2;
+            let key_to_right = *Self::internal_node_key(node, index);
+            if key_to_right >= key {
+                high = index;
+            } else {
+                low = index + 1;
+            }
+        }
+        let child_num = *Self::internal_node_child(node, low) as usize;
+        let child = cursor.table.pager.get_page(child_num);
+        match Node::get_node_type(&child) {
+            NodeType::NodeInternal => {
+                return Self::internal_node_find(cursor, child_num, key);
+            },
+            NodeType::NodeLeaf => {
+                return LeafNode::leaf_node_search(cursor, child_num, key);
+            },
         }
     }
 }
