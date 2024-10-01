@@ -42,8 +42,16 @@ impl LeafNode{
     pub fn initialize_leaf_node(node: &mut Vec<u8>) {
         let num_cells = Self::leaf_node_num_cells(node);
         *num_cells = 0;
+        let next_leaf_page_number = Self::leaf_node_next_leaf(node);
+        *next_leaf_page_number = 0;
         Node::set_node_type(node, NodeType::NodeLeaf);
 
+    }
+
+    pub fn leaf_node_next_leaf(node: &mut Vec<u8>) -> &mut i32{
+        unsafe  {
+            &mut *(node[LEAF_NODE_NEXT_LEAF_OFFSET..(LEAF_NODE_NEXT_LEAF_OFFSET + LEAF_NODE_NEXT_LEAF_SIZE)].as_mut_ptr() as *mut i32)
+        }  
     }
 
     pub fn leaf_node_insert(cursor: &mut Cursor, key: i32, value: & Row) {
@@ -84,6 +92,8 @@ impl LeafNode{
         {
             let new_node: &mut Vec<u8> = cursor.table.pager.get_page(new_page_num);
             Self::initialize_leaf_node(new_node);
+            *Self::leaf_node_next_leaf(new_node) = *Self::leaf_node_next_leaf(&mut copy_of_initial_vector);
+            
             let destin_node = new_node;
             for i in (LEAF_NODE_LEFT_SPLIT_COUNT..(1 + LEAF_NODE_MAX_CELLS)).rev() {
                 let index_within_node = i % LEAF_NODE_LEFT_SPLIT_COUNT;
@@ -96,9 +106,9 @@ impl LeafNode{
                             Self::leaf_node_cell(&mut copy_of_initial_vector, i-1).as_mut_ptr(), 
                             destination.as_mut_ptr(),
                             LEAF_NODE_CELL_SIZE) 
-                    };
-                }
-                else {
+                        };
+                    }
+                    else {
                     unsafe { 
                         std::ptr::copy_nonoverlapping(
                             Self::leaf_node_cell(&mut copy_of_initial_vector, i).as_mut_ptr(), 
@@ -113,6 +123,7 @@ impl LeafNode{
         
         {
             let old_node: &mut Vec<u8> = cursor.table.pager.get_page(cursor.page_num);
+            *Self::leaf_node_next_leaf(old_node) = new_page_num as i32;
             let destin_node = old_node;
             for i in (0..LEAF_NODE_LEFT_SPLIT_COUNT).rev() {
                 let index_within_node = i % LEAF_NODE_LEFT_SPLIT_COUNT;

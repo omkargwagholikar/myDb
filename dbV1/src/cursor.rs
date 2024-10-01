@@ -25,7 +25,7 @@ impl<'a> Cursor<'a> {
         let num_cells = *LeafNode::leaf_node_num_cells(node);
         self.end_of_table = num_cells == 0;
     }
-    
+
     // // This function is replaced by the new table_start as this implementation only
     // // works with a single node and is therefore not suitable for multilevel traversal
     // // accross the b tree.
@@ -62,11 +62,18 @@ impl<'a> Cursor<'a> {
     }
 
     pub fn advance_cursor(&mut self) {
+        self.cell_num += 1;
         let page_num = self.page_num;
         let node = self.table.pager.get_page(page_num);
-        self.cell_num += 1;
+
         if self.cell_num >= *LeafNode::leaf_node_num_cells(node) {
-            self.end_of_table = true
+            let next_page_num = *LeafNode::leaf_node_next_leaf(node);
+            if next_page_num == 0 {
+                self.end_of_table = true;
+            } else {
+                self.page_num = next_page_num as usize;
+                self.cell_num = 0;
+            }
         };
     }
 
