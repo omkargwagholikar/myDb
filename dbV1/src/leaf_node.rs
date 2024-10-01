@@ -188,8 +188,9 @@ impl LeafNode{
         
         while min_index <= high_index {
             let mid_index = min_index + (high_index - min_index) / 2;
-    
             let key_at_index = *Self::leaf_node_key(page, mid_index);
+
+            println!("leaf: {min_index} {key_at_index} {high_index}");
     
             if key == key_at_index {
                 cursor.cell_num = mid_index;

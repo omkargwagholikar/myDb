@@ -20,12 +20,23 @@ impl<'a> Cursor<'a> {
     }
 
     pub fn table_start(&mut self) {
-        self.cell_num = 0;
-        self.page_num = self.table.root_page_num;
-        let root_data = self.table.pager.get_page(self.page_num);
-        let num_cells = LeafNode::leaf_node_num_cells(root_data);
-        self.end_of_table = *num_cells == 0;
+        Self::table_find(self, 0);
+        let node = self.table.pager.get_page(self.page_num);
+        let num_cells = *LeafNode::leaf_node_num_cells(node);
+        self.end_of_table = num_cells == 0;
     }
+    
+    // // This function is replaced by the new table_start as this implementation only
+    // // works with a single node and is therefore not suitable for multilevel traversal
+    // // accross the b tree.
+
+    // pub fn table_start(&mut self) {
+    //     self.cell_num = 0;
+    //     self.page_num = self.table.root_page_num;
+    //     let root_data = self.table.pager.get_page(self.page_num);
+    //     let num_cells = LeafNode::leaf_node_num_cells(root_data);
+    //     self.end_of_table = *num_cells == 0;
+    // }
 
     // // This function was replaced by the table_find function. As table_end does not main-
     // // tain order while inserting into the database, while table_find does.
@@ -44,7 +55,7 @@ impl<'a> Cursor<'a> {
         if Node::get_node_type(&root_node) == NodeType::NodeLeaf {
             return LeafNode::leaf_node_search(self, root_page_num, key);
         } else {
-            // println!("Need to implement searching internal nodes");
+            println!("searching internal nodes");
             // std::process::exit(1);
             return InternalNode::internal_node_find(self, root_page_num, key);
         }

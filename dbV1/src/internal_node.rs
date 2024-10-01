@@ -59,6 +59,7 @@ impl InternalNode {
     }
 
     pub fn internal_node_find(cursor: &mut Cursor, page_num: usize, key: i32){
+
         let node = cursor.table.pager.get_page(page_num);
         let num_keys = *Self::internal_node_num_keys(node);
 
@@ -68,6 +69,7 @@ impl InternalNode {
         while low != high {
             let index = low + (high - low) / 2;
             let key_to_right = *Self::internal_node_key(node, index);
+            println!("internal: {low} {key_to_right} {high}");
             if key_to_right >= key {
                 high = index;
             } else {
@@ -76,11 +78,14 @@ impl InternalNode {
         }
         let child_num = *Self::internal_node_child(node, low) as usize;
         let child = cursor.table.pager.get_page(child_num);
+        cursor.page_num = child_num;
         match Node::get_node_type(&child) {
             NodeType::NodeInternal => {
+                println!("Child is internal node");
                 return Self::internal_node_find(cursor, child_num, key);
             },
             NodeType::NodeLeaf => {
+                println!("Child is leaf node");
                 return LeafNode::leaf_node_search(cursor, child_num, key);
             },
         }

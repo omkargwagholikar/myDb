@@ -1,3 +1,5 @@
+use std::io::{stdout, Write};
+
 use crate::{constants::*, cursor::Cursor, input_buffer::InputBuffer, leaf_node::LeafNode, row::Row, table::Table};
 pub enum StatementType{ 
     StatementInsert, 
@@ -88,15 +90,11 @@ impl Statement {
     
         let root_data = cursor.table.pager.get_page(cursor.table.root_page_num);
         let num_cells = *LeafNode::leaf_node_num_cells(root_data);
-    
-        // if num_cells as usize >= LEAF_NODE_MAX_CELLS {
-        //     return ExecuteResult::ExecuteTableFull;
-        // }
 
-    
         let key_to_insert = self.row.id as i32;
         cursor.table_find(key_to_insert);
-    
+        
+        
         let root_data = cursor.table.pager.get_page(cursor.table.root_page_num);
         if cursor.cell_num < num_cells {
             let key_at_index = LeafNode::leaf_node_key(root_data, cursor.cell_num);
@@ -104,6 +102,10 @@ impl Statement {
                 return ExecuteResult::ExecuteDuplicateKey;
             }
         }
+        
+        print!("Inserting {key_to_insert} at position: {}, with prev value: {}", cursor.cell_num, *LeafNode::leaf_node_key(root_data, cursor.cell_num));
+        stdout().flush().unwrap();
+        println!();
     
         LeafNode::leaf_node_insert(&mut cursor, key_to_insert, &self.row);
         return ExecuteResult::ExecuteSuccess;
