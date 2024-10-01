@@ -19,7 +19,7 @@ pub const NODE_TYPE_OFFSET: usize = 0;
 pub const IS_ROOT_SIZE: usize = size_of::<i8>() as usize;
 // pub const IS_ROOT_OFFSET: usize = NODE_TYPE_SIZE;
 pub const PARENT_POINTER_SIZE: usize = size_of::<i32>() as usize;
-// pub const PARENT_POINTER_OFFSET: usize = IS_ROOT_OFFSET + IS_ROOT_SIZE;
+pub const PARENT_POINTER_OFFSET: usize = IS_ROOT_OFFSET + IS_ROOT_SIZE;
 pub const COMMON_NODE_HEADER_SIZE: usize = NODE_TYPE_SIZE + IS_ROOT_SIZE + PARENT_POINTER_SIZE;
 
 pub const LEAF_NODE_NUM_CELLS_SIZE: usize = size_of::<i32>() as usize;
@@ -46,6 +46,8 @@ pub const INTERNAL_NODE_HEADER_SIZE: usize = COMMON_NODE_HEADER_SIZE + INTERNAL_
 pub const INTERNAL_NODE_KEY_SIZE: usize = size_of::<i32>() as usize;
 pub const INTERNAL_NODE_CHILD_SIZE: usize = size_of::<i32>() as usize;
 pub const INTERNAL_NODE_CELL_SIZE: usize = INTERNAL_NODE_CHILD_SIZE + INTERNAL_NODE_KEY_SIZE;
+
+pub const INTERNAL_NODE_MAX_KEYS: usize = 3;
 
 pub const LEAF_NODE_RIGHT_SPLIT_COUNT:usize = (LEAF_NODE_MAX_CELLS + 1) / 2;
 pub const LEAF_NODE_LEFT_SPLIT_COUNT: usize = (LEAF_NODE_MAX_CELLS + 1) - LEAF_NODE_RIGHT_SPLIT_COUNT;

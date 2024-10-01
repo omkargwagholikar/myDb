@@ -57,6 +57,11 @@ impl Node {
         }
     }
 
+    pub fn node_parent(node: &mut Vec<u8>) -> &mut i32 {
+        let num_cells_bytes = &mut node[PARENT_POINTER_OFFSET..PARENT_POINTER_OFFSET + PARENT_POINTER_SIZE];
+        unsafe { &mut *(num_cells_bytes.as_mut_ptr() as *mut i32) }        
+    }
+
     pub fn indent(level: i32) {
         for _ in 0..level {
             print!(" ");
