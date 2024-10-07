@@ -1,4 +1,4 @@
-use std::io::{stdout, Write};
+// use std::io::{stdout, Write};
 
 use crate::{constants::*, cursor::Cursor, input_buffer::InputBuffer, leaf_node::LeafNode, row::Row, table::Table};
 pub enum StatementType{ 
@@ -101,11 +101,7 @@ impl Statement {
             if *key_at_index == key_to_insert {
                 return ExecuteResult::ExecuteDuplicateKey;
             }
-        }
-        
-        print!("Inserting {key_to_insert} at position: {}, with prev value: {}", cursor.cell_num, *LeafNode::leaf_node_key(root_data, cursor.cell_num));
-        stdout().flush().unwrap();
-        println!();
+        }        
     
         LeafNode::leaf_node_insert(&mut cursor, key_to_insert, &self.row);
         return ExecuteResult::ExecuteSuccess;

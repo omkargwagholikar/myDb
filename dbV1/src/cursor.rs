@@ -55,8 +55,6 @@ impl<'a> Cursor<'a> {
         if Node::get_node_type(&root_node) == NodeType::NodeLeaf {
             return LeafNode::leaf_node_search(self, root_page_num, key);
         } else {
-            println!("searching internal nodes");
-            // std::process::exit(1);
             return InternalNode::internal_node_find(self, root_page_num, key);
         }
     }

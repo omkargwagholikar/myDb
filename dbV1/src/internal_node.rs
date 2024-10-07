@@ -42,12 +42,9 @@ impl InternalNode {
     pub fn internal_node_key(node: &mut Vec<u8>, cell_num: i32) -> &mut i32{
         let start = INTERNAL_NODE_HEADER_SIZE + cell_num as usize * INTERNAL_NODE_CELL_SIZE + INTERNAL_NODE_CHILD_SIZE;
         let end = start + INTERNAL_NODE_KEY_SIZE;
-        let mut temp = node.clone();
         let num_cell_bytes = &mut node[start..end];
         unsafe {
-            println!("internal_node_key {start} {end} {cell_num} {}", Self::internal_node_num_keys(&mut temp));
             let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32);
-            println!("internal_node_key cell_num: {cell_num}, Val: {}", *val);
             return val;
         }
     }
@@ -112,21 +109,9 @@ impl InternalNode {
             *InternalNode::internal_node_child(&mut parent, index) = child_page_num as i32;
             *InternalNode::internal_node_key(&mut parent, index) = child_max_key;
         }
-        // copy parent to location
-        
-        // println!("====================================== {} {} ", cursor.table.pager.get_page(parent_page_num).len(), parent.len());
-        // unsafe { 
-        //     std::ptr::copy(
-        //         &parent,
-        //         cursor.table.pager.get_page(parent_page_num),
-        //         PAGE_SIZE
-        //     ) 
-        //     };            
-        // println!("======================================");
     }
 
     pub fn internal_node_find_child(node: &mut Vec<u8>, key: i32) -> i32{
-        println!("internal_node_find_child");
         let num_keys = *InternalNode::internal_node_num_keys(node);
         let mut min_index = 0;
         let mut max_index = num_keys;
@@ -140,7 +125,7 @@ impl InternalNode {
                 min_index = index +1;
             }
         }
-        println!("Internal node index: {min_index}");
+        
         return min_index
     }
 
@@ -152,11 +137,9 @@ impl InternalNode {
         cursor.page_num = child_num;
         match Node::get_node_type(&child) {
             NodeType::NodeInternal => {
-                println!("Child is internal node");
                 return Self::internal_node_find(cursor, child_num, key);
             },
             NodeType::NodeLeaf => {
-                println!("Child is leaf node");
                 return LeafNode::leaf_node_search(cursor, child_num, key);
             },
         }

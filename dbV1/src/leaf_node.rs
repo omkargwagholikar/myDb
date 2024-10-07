@@ -85,7 +85,6 @@ impl LeafNode{
     }
 
     pub fn leaf_node_split_and_insert(cursor: &mut Cursor, _key: i32, value: &Row) {
-        println!("leaf_node_split_and_insert");
         let new_page_num: usize = cursor.table.pager.get_unused_page();
 
         // Node::set_node_root(cursor.table.pager.get_page(cursor.page_num), false);
@@ -164,16 +163,12 @@ impl LeafNode{
             }
             return Self::create_new_root(cursor, new_page_num);
         } else {
-            println!("===> HERE <===");
             let parent_page_num = *Node::node_parent(&mut copy_of_initial_vector) as usize;
-            println!("got parent");
             let new_max = *Node::get_node_max_key(&mut copy_of_initial_vector);
 
             let parent = cursor.table.pager.get_page(parent_page_num);
             InternalNode::update_internal_node_key(parent, old_max, new_max);
-            println!("update_internal_node_key");
             InternalNode::internal_node_insert(cursor, parent_page_num, new_page_num);
-            println!("internal_node_insert");
             // std::process::exit(1);
         }
     }
@@ -224,8 +219,6 @@ impl LeafNode{
             let mid_index = min_index + (high_index - min_index) / 2;
             let key_at_index = *Self::leaf_node_key(page, mid_index);
 
-            println!("leaf: {min_index} {key_at_index} {high_index}");
-    
             if key == key_at_index {
                 cursor.cell_num = mid_index;
                 return;
@@ -238,7 +231,7 @@ impl LeafNode{
                 min_index = mid_index + 1;
             }
         }
-        println!("Leaf node index: {min_index}");
+        // println!("Leaf node index: {min_index}");
         cursor.cell_num = min_index;
     }    
 }
