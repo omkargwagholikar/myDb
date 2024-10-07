@@ -113,7 +113,9 @@ impl InternalNode {
             *InternalNode::internal_node_child(&mut parent, original_num_keys) = right_child_page_num;
             let temp = *Node::get_node_max_key(right_child);
             println!("------------------------------------ {original_num_keys} {temp} {}", parent.len());
-            *InternalNode::internal_node_key(&mut parent, original_num_keys) = temp;
+            let a = InternalNode::internal_node_key(&mut parent, original_num_keys);
+            print!("======================================");
+            *a = temp;
             print!("======================================");
             *InternalNode::internal_node_right_child(&mut parent) = child_page_num as i32;
         } else {
