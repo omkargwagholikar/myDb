@@ -70,12 +70,16 @@ impl InternalNode {
     }
 
     pub fn internal_node_insert(cursor: &mut Cursor, parent_page_num: usize, child_page_num: usize) {
-        let mut parent: Vec<u8> = cursor.table.pager.get_page_at(parent_page_num);
         let child_max_key: i32;
         {
-            let child: &mut Vec<u8> = cursor.table.pager.get_page(child_page_num);
-            child_max_key = *Node::get_node_max_key(child);
+            let mut child: Vec<u8> = cursor.table.pager.get_page_at(child_page_num);
+            child_max_key = *Node::get_node_max_key(&mut child);
         }
+        
+        let right_child_page_num: i32 = *InternalNode::internal_node_right_child(&mut cursor.table.pager.get_page_at(parent_page_num));
+        let mut right_child: Vec<u8> = cursor.table.pager.get_page_at(right_child_page_num as usize);
+        
+        let mut parent: &mut Vec<u8> = cursor.table.pager.get_page(parent_page_num);
         let index: i32 = InternalNode::internal_node_find_child(&mut parent, child_max_key);
 
         let original_num_keys: i32 = *InternalNode::internal_node_num_keys(&mut parent);
@@ -86,17 +90,12 @@ impl InternalNode {
             std::process::exit(1);
         }
 
-        let right_child_page_num: i32 = *InternalNode::internal_node_right_child(&mut parent);
-        let right_child: &mut Vec<u8> = cursor.table.pager.get_page(right_child_page_num as usize);
 
-        if child_max_key > *Node::get_node_max_key(right_child) {
+        if child_max_key > *Node::get_node_max_key(&mut right_child) {
             *InternalNode::internal_node_child(&mut parent, original_num_keys) = right_child_page_num;
-            let temp = *Node::get_node_max_key(right_child);
-            println!("------------------------------------ {original_num_keys} {temp} {}", parent.len());
+            let temp = *Node::get_node_max_key(&mut right_child);
             let a = InternalNode::internal_node_key(&mut parent, original_num_keys);
-            println!("======================================");
             *a = temp;
-            println!("======================================");
             *InternalNode::internal_node_right_child(&mut parent) = child_page_num as i32;
         } else {
             for i in (1+index..original_num_keys+1).rev() {
@@ -115,13 +114,15 @@ impl InternalNode {
         }
         // copy parent to location
         
-
-        unsafe { 
-            std::ptr::copy(
-                &parent,
-                cursor.table.pager.get_page(parent_page_num),
-                parent.len()) 
-        };            
+        // println!("====================================== {} {} ", cursor.table.pager.get_page(parent_page_num).len(), parent.len());
+        // unsafe { 
+        //     std::ptr::copy(
+        //         &parent,
+        //         cursor.table.pager.get_page(parent_page_num),
+        //         PAGE_SIZE
+        //     ) 
+        //     };            
+        // println!("======================================");
     }
 
     pub fn internal_node_find_child(node: &mut Vec<u8>, key: i32) -> i32{
