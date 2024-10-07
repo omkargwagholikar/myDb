@@ -10,7 +10,7 @@ pub struct InternalNode{
 impl InternalNode {
 
     pub fn internal_node_num_keys(node: &mut Vec<u8>) -> &mut i32{
-        let num_cells_bytes = &mut node[LEAF_NODE_NUM_CELLS_OFFSET..LEAF_NODE_NUM_CELLS_OFFSET + 4];
+        let num_cells_bytes = &mut node[INTERNAL_NODE_NUM_KEYS_OFFSET..INTERNAL_NODE_NUM_KEYS_OFFSET + INTERNAL_NODE_NUM_KEYS_SIZE];
         unsafe { &mut *(num_cells_bytes.as_mut_ptr() as *mut i32) }
     }
 
@@ -43,15 +43,33 @@ impl InternalNode {
     //     let start: usize = INTERNAL_NODE_HEADER_SIZE + key_num as usize * INTERNAL_NODE_CELL_SIZE;
     //     let end = start + INTERNAL_NODE_KEY_SIZE;
     //     let num_cell_bytes = &mut node[start..end];
-    //     unsafe { &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) }
+    //     unsafe { 
+    //         let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) ;
+    //         println!("Val: {}", *val);
+    //         return val;        
+    //     }
     // }
 
-    pub fn internal_node_key(root: &mut Vec<u8>, key_num: i32) -> &mut i32{
-        let int_node_cell = Self::internal_node_cell_reference(root, key_num) as *mut i32;
-        unsafe  {
-            &mut *int_node_cell.add(INTERNAL_NODE_CHILD_SIZE)
+    pub fn internal_node_key(node: &mut Vec<u8>, cell_num: i32) -> &mut i32{
+        let start = INTERNAL_NODE_HEADER_SIZE + cell_num as usize * INTERNAL_NODE_CELL_SIZE + INTERNAL_NODE_CHILD_SIZE;
+        let end = start + INTERNAL_NODE_KEY_SIZE;
+        let num_cell_bytes = &mut node[start..end];
+
+        unsafe { 
+            let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) ;
+            println!("internal_node_key cell_num: {cell_num}, Val: {}", *val);
+            return val;        
         }        
     }
+
+    // pub fn internal_node_key(root: &mut Vec<u8>, key_num: i32) -> &mut i32{
+    //     let int_node_cell = Self::internal_node_cell_reference(root, key_num) as *mut i32;
+    //     unsafe  {
+    //         let val= &mut *int_node_cell.add(INTERNAL_NODE_CHILD_SIZE);
+    //         println!("Val: {}", *val);
+    //         return val;
+    //     }        
+    // }
 
     pub fn internal_node_child(root: &mut Vec<u8>, child_num: i32) -> &mut i32{
         let num_keys = *Self::internal_node_num_keys(root);
@@ -79,7 +97,7 @@ impl InternalNode {
         }
         let index: i32 = InternalNode::internal_node_find_child(&mut parent, child_max_key);
 
-        let original_num_keys: i32 = InternalNode::internal_node_find_child(&mut parent, child_max_key);
+        let original_num_keys: i32 = *InternalNode::internal_node_num_keys(&mut parent);
         *InternalNode::internal_node_num_keys(&mut parent) = original_num_keys + 1;
 
         if original_num_keys as usize >= INTERNAL_NODE_MAX_KEYS{
@@ -95,7 +113,7 @@ impl InternalNode {
             *InternalNode::internal_node_key(&mut parent, original_num_keys) = *Node::get_node_max_key(right_child);
             *InternalNode::internal_node_right_child(&mut parent) = child_page_num as i32;
         } else {
-            for i in (index..original_num_keys+1).rev() {
+            for i in (1+index..original_num_keys+1).rev() {
                 let source = InternalNode::internal_node_cell_value(&parent, i-1);
                 let destination = InternalNode::internal_node_cell_reference(&mut parent, i);
 
@@ -119,12 +137,12 @@ impl InternalNode {
     }
 
     pub fn internal_node_find_child(node: &mut Vec<u8>, key: i32) -> i32{
+        println!("internal_node_find_child");
         let num_keys = *InternalNode::internal_node_num_keys(node);
         let mut min_index = 0;
         let mut max_index = num_keys;
 
         while min_index != max_index {
-            println!(".");
             let index = min_index + (max_index - min_index) / 2;
             let key_to_right = *InternalNode::internal_node_key(node, index);
             if key_to_right >= key {
@@ -133,6 +151,7 @@ impl InternalNode {
                 min_index = index +1;
             }
         }
+        println!("Internal node index: {min_index}");
         return min_index
     }
 

@@ -16,6 +16,7 @@ pub struct  Node {
 impl Node {
     pub fn is_node_root(node: &Vec<u8>) -> bool{
         let val = &node[0..IS_ROOT_OFFSET];
+        println!("ROOT VALUE IS: {}", val[0]);
         if val[0] > 0 {
             return true;
         } else {
@@ -76,7 +77,7 @@ impl Node {
             NodeType::NodeInternal => {
                 let num_keys = *InternalNode::internal_node_num_keys(&mut node);
                 Self::indent(indent_level);
-                println!("- internal size: {}", num_keys);
+                println!("- internal size: {} {}", num_keys, Node::is_node_root(&node));
                 for i in 0..num_keys {
                     let child = *InternalNode::internal_node_child(&mut node, i);
                     Self::print_tree(pager, child as usize, indent_level + 1);
@@ -90,7 +91,7 @@ impl Node {
             NodeType::NodeLeaf => {
                 let num_keys = *LeafNode::leaf_node_num_cells(&mut node);
                 Self::indent(indent_level);
-                println!("- leaf size: {}", num_keys);
+                println!("- leaf size: {} {}", num_keys, Node::is_node_root(&node));
                 for i in 0..num_keys {
                     Self::indent(indent_level + 1);
                     println!("- {}", *LeafNode::leaf_node_key(&mut node, i));
