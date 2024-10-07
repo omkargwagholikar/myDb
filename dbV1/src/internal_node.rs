@@ -39,38 +39,18 @@ impl InternalNode {
         i32::from_ne_bytes(num_cell_bytes.try_into().unwrap())
     }
 
-    // pub fn internal_node_key(node: &mut Vec<u8>, key_num: i32) -> &mut i32 {
-    //     let start: usize = INTERNAL_NODE_HEADER_SIZE + key_num as usize * INTERNAL_NODE_CELL_SIZE;
-    //     let end = start + INTERNAL_NODE_KEY_SIZE;
-    //     let num_cell_bytes = &mut node[start..end];
-    //     unsafe { 
-    //         let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) ;
-    //         println!("Val: {}", *val);
-    //         return val;        
-    //     }
-    // }
-
     pub fn internal_node_key(node: &mut Vec<u8>, cell_num: i32) -> &mut i32{
         let start = INTERNAL_NODE_HEADER_SIZE + cell_num as usize * INTERNAL_NODE_CELL_SIZE + INTERNAL_NODE_CHILD_SIZE;
         let end = start + INTERNAL_NODE_KEY_SIZE;
+        let mut temp = node.clone();
         let num_cell_bytes = &mut node[start..end];
-
-        unsafe { 
-            println!("internal_node_key {start} {end} {cell_num}");
-            let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) ;
+        unsafe {
+            println!("internal_node_key {start} {end} {cell_num} {}", Self::internal_node_num_keys(&mut temp));
+            let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32);
             println!("internal_node_key cell_num: {cell_num}, Val: {}", *val);
-            return val;        
-        }        
+            return val;
+        }
     }
-
-    // pub fn internal_node_key(root: &mut Vec<u8>, key_num: i32) -> &mut i32{
-    //     let int_node_cell = Self::internal_node_cell_reference(root, key_num) as *mut i32;
-    //     unsafe  {
-    //         let val= &mut *int_node_cell.add(INTERNAL_NODE_CHILD_SIZE);
-    //         println!("Val: {}", *val);
-    //         return val;
-    //     }        
-    // }
 
     pub fn internal_node_child(root: &mut Vec<u8>, child_num: i32) -> &mut i32{
         let num_keys = *Self::internal_node_num_keys(root);
@@ -114,9 +94,9 @@ impl InternalNode {
             let temp = *Node::get_node_max_key(right_child);
             println!("------------------------------------ {original_num_keys} {temp} {}", parent.len());
             let a = InternalNode::internal_node_key(&mut parent, original_num_keys);
-            print!("======================================");
+            println!("======================================");
             *a = temp;
-            print!("======================================");
+            println!("======================================");
             *InternalNode::internal_node_right_child(&mut parent) = child_page_num as i32;
         } else {
             for i in (1+index..original_num_keys+1).rev() {
