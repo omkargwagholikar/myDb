@@ -46,7 +46,6 @@ impl LeafNode{
         *next_leaf_page_number = 0;
         Node::set_node_type(node, NodeType::NodeLeaf);
         Node::set_node_root(node, false);
-
     }
 
     pub fn leaf_node_next_leaf(node: &mut Vec<u8>) -> &mut i32{
@@ -89,7 +88,7 @@ impl LeafNode{
         println!("leaf_node_split_and_insert");
         let new_page_num: usize = cursor.table.pager.get_unused_page();
 
-        Node::set_node_root(cursor.table.pager.get_page(cursor.page_num), false);
+        // Node::set_node_root(cursor.table.pager.get_page(cursor.page_num), false);
 
         let mut copy_of_initial_vector: Vec<u8> = cursor.table.pager.get_page(cursor.page_num).clone();
         let is_old_root:bool = Node::is_node_root(&mut copy_of_initial_vector);                        
@@ -167,11 +166,14 @@ impl LeafNode{
         } else {
             println!("===> HERE <===");
             let parent_page_num = *Node::node_parent(&mut copy_of_initial_vector) as usize;
+            println!("got parent");
             let new_max = *Node::get_node_max_key(&mut copy_of_initial_vector);
+
             let parent = cursor.table.pager.get_page(parent_page_num);
             InternalNode::update_internal_node_key(parent, old_max, new_max);
-            println!("internal_node_insert");
+            println!("update_internal_node_key");
             InternalNode::internal_node_insert(cursor, parent_page_num, new_page_num);
+            println!("internal_node_insert");
             // std::process::exit(1);
         }
     }

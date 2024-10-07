@@ -15,9 +15,8 @@ pub struct  Node {
 
 impl Node {
     pub fn is_node_root(node: &Vec<u8>) -> bool{
-        let val = &node[0..IS_ROOT_OFFSET];
-        println!("ROOT VALUE IS: {}", val[0]);
-        if val[0] > 0 {
+        let val = &node[IS_ROOT_OFFSET];
+        if *val > 0 {
             return true;
         } else {
             return false;

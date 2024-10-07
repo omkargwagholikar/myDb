@@ -56,6 +56,7 @@ impl InternalNode {
         let num_cell_bytes = &mut node[start..end];
 
         unsafe { 
+            println!("internal_node_key {start} {end} {cell_num}");
             let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) ;
             println!("internal_node_key cell_num: {cell_num}, Val: {}", *val);
             return val;        
@@ -110,7 +111,10 @@ impl InternalNode {
 
         if child_max_key > *Node::get_node_max_key(right_child) {
             *InternalNode::internal_node_child(&mut parent, original_num_keys) = right_child_page_num;
-            *InternalNode::internal_node_key(&mut parent, original_num_keys) = *Node::get_node_max_key(right_child);
+            let temp = *Node::get_node_max_key(right_child);
+            println!("------------------------------------ {original_num_keys} {temp} {}", parent.len());
+            *InternalNode::internal_node_key(&mut parent, original_num_keys) = temp;
+            print!("======================================");
             *InternalNode::internal_node_right_child(&mut parent) = child_page_num as i32;
         } else {
             for i in (1+index..original_num_keys+1).rev() {
@@ -128,8 +132,10 @@ impl InternalNode {
             *InternalNode::internal_node_key(&mut parent, index) = child_max_key;
         }
         // copy parent to location
+        
+
         unsafe { 
-            std::ptr::copy_nonoverlapping(
+            std::ptr::copy(
                 &parent,
                 cursor.table.pager.get_page(parent_page_num),
                 parent.len()) 
