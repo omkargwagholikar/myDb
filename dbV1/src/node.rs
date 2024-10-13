@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::{constants::*, internal_node::InternalNode, leaf_node::LeafNode, pager::Pager};
+use crate::{cursor::Cursor, constants::*, internal_node::InternalNode, leaf_node::LeafNode, pager::Pager};
 
 
 #[derive(PartialEq)]
@@ -45,14 +45,33 @@ impl Node {
         node[NODE_TYPE_OFFSET] = value;
     }
 
-    pub fn get_node_max_key(node: &mut Vec<u8>) -> &mut i32{
+    pub fn get_node_max_key(node: &mut Vec<u8>) -> i32{
         let mut temp = node.clone();
         match Self::get_node_type(&temp) {
             NodeType::NodeInternal => {
-                return InternalNode::internal_node_key(node, *InternalNode::internal_node_num_keys(&mut temp)-1);
+                let pager = Pager::new(DB_FILE_NAME);                
+                let right_child_page_number = *InternalNode::internal_node_right_child(node) as usize;
+                let mut right_child = pager.get_page_at(right_child_page_number);
+                return Self::internal_node_max_key(&mut right_child, &pager);
             },
             NodeType::NodeLeaf => {
-                return LeafNode::leaf_node_key(node, *LeafNode::leaf_node_num_cells(&mut temp) - 1);
+                return *LeafNode::leaf_node_key(node, *LeafNode::leaf_node_num_cells(&mut temp) - 1);
+            }
+        }
+    }
+
+    pub fn internal_node_max_key(node: &mut Vec<u8>, pager: &Pager) -> i32 {
+        match Self::get_node_type(node) {
+            NodeType::NodeInternal => {
+                let right_child_page_number = *InternalNode::internal_node_right_child(node) as usize;
+                let mut right_child = pager.get_page_at(right_child_page_number);
+                let ret_val = Self::internal_node_max_key(&mut right_child, pager);
+                return ret_val;
+            }
+            NodeType::NodeLeaf => {
+                let cell_num = *LeafNode::leaf_node_num_cells(node) - 1;
+                let ret_val = *LeafNode::leaf_node_key(node, cell_num);
+                return ret_val;
             }
         }
     }
@@ -97,5 +116,40 @@ impl Node {
                 }
             },
         }        
+    }
+
+
+    pub fn create_new_root(cursor: &mut Cursor, right_child_page_num: usize) {
+        let mut root = cursor.table.pager.get_page(cursor.table.root_page_num).clone();
+        
+        Node::set_node_root(&mut cursor.table.pager.get_page(right_child_page_num), false);
+        let left_child_page_num = cursor.table.pager.num_pages;
+        let left_child = cursor.table.pager.get_page(left_child_page_num);
+        unsafe { 
+            std::ptr::copy(
+                root.as_ptr(), 
+                left_child.as_mut_ptr(), 
+                PAGE_SIZE
+            );
+        } 
+        Node::set_node_root(left_child, false);
+        InternalNode::initialize_internal_node(&mut root);
+        Node::set_node_root(&mut root, true);
+        let curr_internal_num_keys = *InternalNode::internal_node_num_keys(&mut root);
+        *InternalNode::internal_node_num_keys(&mut root) = 1 + curr_internal_num_keys;
+        *InternalNode::internal_node_child(&mut root, curr_internal_num_keys) = left_child_page_num as i32;
+        let left_child_max_key = Node::get_node_max_key(left_child);
+        *InternalNode::internal_node_key(&mut root, curr_internal_num_keys) = left_child_max_key;        
+        
+        *InternalNode::internal_node_right_child(&mut root) = right_child_page_num as i32;
+        
+        
+        unsafe {
+            std::ptr::copy(
+                root.as_ptr(), 
+                cursor.table.pager.get_page(cursor.table.root_page_num).as_mut_ptr(), 
+                PAGE_SIZE
+            );
+        }
     }
 }

@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use std::mem::size_of;
+pub const DB_FILE_NAME: &str = "test.db";
 pub const COLUMN_USERNAME_SIZE: usize = 32;
 pub const COLUMN_EMAIL_SIZE: usize = 256;
 pub const ID_SIZE: usize = size_of::<i32>() as usize;

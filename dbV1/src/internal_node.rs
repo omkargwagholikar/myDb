@@ -11,6 +11,7 @@ impl InternalNode {
 
     pub fn internal_node_num_keys(node: &mut Vec<u8>) -> &mut i32{
         let num_cells_bytes = &mut node[INTERNAL_NODE_NUM_KEYS_OFFSET..INTERNAL_NODE_NUM_KEYS_OFFSET + INTERNAL_NODE_NUM_KEYS_SIZE];
+        // let temp = i32::from_ne_bytes(num_cells_bytes.try_into().unwrap());
         unsafe { &mut *(num_cells_bytes.as_mut_ptr() as *mut i32) }
     }
 
@@ -21,7 +22,7 @@ impl InternalNode {
     }
     
     pub fn internal_node_right_child(root: &mut Vec<u8>) -> &mut i32{
-        let num_cell_bytes = &mut root[INTERNAL_NODE_RIGHT_CHILD_OFFSET..(INTERNAL_NODE_RIGHT_CHILD_OFFSET + INTERNAL_NODE_RIGHT_CHILD_SIZE)];
+        let num_cell_bytes: &mut [u8] = &mut root[INTERNAL_NODE_RIGHT_CHILD_OFFSET..(INTERNAL_NODE_RIGHT_CHILD_OFFSET + INTERNAL_NODE_RIGHT_CHILD_SIZE)];
         unsafe { &mut *(num_cell_bytes.as_mut_ptr() as *mut i32) }
     }
 
@@ -40,11 +41,11 @@ impl InternalNode {
     }
 
     pub fn internal_node_key(node: &mut Vec<u8>, cell_num: i32) -> &mut i32{
-        let start = INTERNAL_NODE_HEADER_SIZE + cell_num as usize * INTERNAL_NODE_CELL_SIZE + INTERNAL_NODE_CHILD_SIZE;
-        let end = start + INTERNAL_NODE_KEY_SIZE;
-        let num_cell_bytes = &mut node[start..end];
+        let start: usize = INTERNAL_NODE_HEADER_SIZE + cell_num as usize * INTERNAL_NODE_CELL_SIZE + INTERNAL_NODE_CHILD_SIZE;
+        let end: usize = start + INTERNAL_NODE_KEY_SIZE;
+        let num_cell_bytes: &mut [u8] = &mut node[start..end];
         unsafe {
-            let val = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32);
+            let val: &mut i32 = &mut *(num_cell_bytes.as_mut_ptr() as *mut i32);
             return val;
         }
     }
@@ -70,7 +71,7 @@ impl InternalNode {
         let child_max_key: i32;
         {
             let mut child: Vec<u8> = cursor.table.pager.get_page_at(child_page_num);
-            child_max_key = *Node::get_node_max_key(&mut child);
+            child_max_key = Node::get_node_max_key(&mut child);
         }
         
         let right_child_page_num: i32 = *InternalNode::internal_node_right_child(&mut cursor.table.pager.get_page_at(parent_page_num));
@@ -88,9 +89,9 @@ impl InternalNode {
         }
 
 
-        if child_max_key > *Node::get_node_max_key(&mut right_child) {
+        if child_max_key > Node::get_node_max_key(&mut right_child) {
             *InternalNode::internal_node_child(&mut parent, original_num_keys) = right_child_page_num;
-            let temp = *Node::get_node_max_key(&mut right_child);
+            let temp = Node::get_node_max_key(&mut right_child);
             let a = InternalNode::internal_node_key(&mut parent, original_num_keys);
             *a = temp;
             *InternalNode::internal_node_right_child(&mut parent) = child_page_num as i32;
@@ -98,13 +99,8 @@ impl InternalNode {
             for i in (1+index..original_num_keys+1).rev() {
                 let source = InternalNode::internal_node_cell_value(&parent, i-1);
                 let destination = InternalNode::internal_node_cell_reference(&mut parent, i);
-
-                unsafe { 
-                    std::ptr::copy_nonoverlapping(
-                        &source,
-                        destination,
-                        INTERNAL_NODE_CELL_SIZE) 
-                };                
+ 
+                *destination = source;
             }
             *InternalNode::internal_node_child(&mut parent, index) = child_page_num as i32;
             *InternalNode::internal_node_key(&mut parent, index) = child_max_key;

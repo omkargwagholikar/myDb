@@ -92,7 +92,7 @@ impl LeafNode{
         let mut copy_of_initial_vector: Vec<u8> = cursor.table.pager.get_page(cursor.page_num).clone();
         let is_old_root:bool = Node::is_node_root(&mut copy_of_initial_vector);                        
         
-        let old_max = *Node::get_node_max_key(&mut copy_of_initial_vector);
+        let old_max = Node::get_node_max_key(&mut copy_of_initial_vector);
         {
             let new_node: &mut Vec<u8> = cursor.table.pager.get_page(new_page_num);
             Self::initialize_leaf_node(new_node);
@@ -161,10 +161,10 @@ impl LeafNode{
                 NodeType::NodeInternal =>  println!("is_old_root, {} {} Internal", InternalNode::internal_node_num_keys(&mut copy_of_initial_vector), INTERNAL_NODE_MAX_KEYS),
                 NodeType::NodeLeaf => println!("is_old_root, {} {} Leaf", LeafNode::leaf_node_num_cells(&mut copy_of_initial_vector), INTERNAL_NODE_MAX_KEYS),
             }
-            return Self::create_new_root(cursor, new_page_num);
+            return Node::create_new_root(cursor, new_page_num);
         } else {
             let parent_page_num = *Node::node_parent(&mut copy_of_initial_vector) as usize;
-            let new_max = *Node::get_node_max_key(&mut copy_of_initial_vector);
+            let new_max = Node::get_node_max_key(&mut copy_of_initial_vector);
 
             let parent = cursor.table.pager.get_page(parent_page_num);
             InternalNode::update_internal_node_key(parent, old_max, new_max);
@@ -172,41 +172,6 @@ impl LeafNode{
             // std::process::exit(1);
         }
     }
-
-    pub fn create_new_root(cursor: &mut Cursor, right_child_page_num: usize) {
-        let mut root = cursor.table.pager.get_page(cursor.table.root_page_num).clone();
-        
-        Node::set_node_root(&mut cursor.table.pager.get_page(right_child_page_num), false);
-        let left_child_page_num = cursor.table.pager.num_pages;
-        let left_child = cursor.table.pager.get_page(left_child_page_num);
-        unsafe { 
-            std::ptr::copy(
-                root.as_ptr(), 
-                left_child.as_mut_ptr(), 
-                PAGE_SIZE
-            );
-        } 
-        Node::set_node_root(left_child, false);
-        InternalNode::initialize_internal_node(&mut root);
-        Node::set_node_root(&mut root, true);
-        let curr_internal_num_keys = *InternalNode::internal_node_num_keys(&mut root);
-        *InternalNode::internal_node_num_keys(&mut root) = 1 + curr_internal_num_keys;
-        *InternalNode::internal_node_child(&mut root, curr_internal_num_keys) = left_child_page_num as i32;
-        let left_child_max_key = Node::get_node_max_key(left_child);
-        *InternalNode::internal_node_key(&mut root, curr_internal_num_keys) = *left_child_max_key;        
-        
-        *InternalNode::internal_node_right_child(&mut root) = right_child_page_num as i32;
-        
-        
-        unsafe {
-            std::ptr::copy(
-                root.as_ptr(), 
-                cursor.table.pager.get_page(cursor.table.root_page_num).as_mut_ptr(), 
-                PAGE_SIZE
-            );
-        }
-    }
-
 
     pub fn leaf_node_search(cursor: &mut Cursor, page_num: usize, key: i32) {
 

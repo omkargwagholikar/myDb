@@ -12,6 +12,7 @@ impl Table {
         let mut pager = Pager::new(file_name);
         let root_page_num = 0;
         
+        // println!("Table has {} pages", pager.num_pages);
         
         if pager.num_pages == 0 {
             let root_data = pager.get_page(0);

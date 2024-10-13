@@ -37,7 +37,8 @@ impl Pager {
                 }
             };
         let pages = std::array::from_fn(|_| None);
-        let num_pages = pages.len() / PAGE_SIZE;
+        let num_pages = file_length / PAGE_SIZE;
+        // println!("length: {}, pages: {}, {}", file_length, num_pages, );
 
         if file_length % PAGE_SIZE != 0 {
             println!("There seem to be a fractional number of pages, the file may be courrupt");
