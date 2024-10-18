@@ -1,4 +1,5 @@
-dbV1/temp.c
+temp.c
+temp_pad.txt
 dbV1/target/*
 *.db
 *.py

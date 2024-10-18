@@ -10,8 +10,7 @@ pub struct InternalNode{
 impl InternalNode {
 
     pub fn internal_node_num_keys(node: &mut Vec<u8>) -> &mut i32{
-        let num_cells_bytes = &mut node[INTERNAL_NODE_NUM_KEYS_OFFSET..INTERNAL_NODE_NUM_KEYS_OFFSET + INTERNAL_NODE_NUM_KEYS_SIZE];
-        // let temp = i32::from_ne_bytes(num_cells_bytes.try_into().unwrap());
+        let num_cells_bytes = &mut node[INTERNAL_NODE_NUM_KEYS_OFFSET..INTERNAL_NODE_NUM_KEYS_OFFSET + INTERNAL_NODE_NUM_KEYS_SIZE];        
         unsafe { &mut *(num_cells_bytes.as_mut_ptr() as *mut i32) }
     }
 
