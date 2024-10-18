@@ -1,5 +1,6 @@
 temp.c
 temp_pad.txt
 dbV1/target/*
+dbV2/target/*
 *.db
 *.py
